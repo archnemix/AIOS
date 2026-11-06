@@ -65,3 +65,7 @@ The first two feature-masked ISO tests did not complete: one extracted GRUB's co
 The next fallback test was blocked by a runner package-install timeout. Its saved apt log showed a large set of recommended multimedia packages being downloaded along with QEMU, so we narrowed the install to required packages and allowed more time. The earlier GRUB permission failure is fixed in the test script, but fallback inference is still pending.
 
 The fallback-comparison job got past dependency installation but its feature-masked guest did not become ready within five minutes. No console diagnostics were captured by that version of the test, so this is not yet evidence of a working fallback. The test now records only filtered boot/error lines and the presence of (not the value of) the boot credential to distinguish a boot, entropy, network or server failure.
+
+## Fallback and AVX2 verified inside the image
+
+Run 42229907573 completed the two-guest test. The feature-masked guest selected the portable backend and the other selected AVX2; both booted and generated text. With alternating samples on the same runner, medians were 11.56 versus 94.47 output tokens/s, and 12.93 versus 216.13 prompt tokens/s. This validates the dispatch and shows a substantial instruction-set kernel difference for this particular short workload. It does not show an OS-only speedup, validate an actual older physical CPU, or prove the automatic thread choice is optimal. Earlier intermittent package-install and guest-start failures are preserved in the engineering history rather than hidden.

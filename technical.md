@@ -80,3 +80,16 @@ The subsequent adaptive ISO boot test and its results are described below; the s
 GitHub run `42223692593` built and booted the new image under QEMU/KVM. The guest selected `avx2`, rejected an invalid token, generated text, and evaluated 2,048 input tokens without truncation. On an AMD EPYC 7763 runner with two fixed inference threads, the guest's median generation speed was 94.77 tokens/s and prompt throughput was 218.23 tokens/s; the same AVX2 binary on the host measured 94.34 and 215.55 respectively. The guest processed the 2,048-token context in 19.27 seconds. These host/VM results are not an OS-only speedup claim. The test copy selected the network GRUB entry and fixed two threads; the distributed ISO defaults to loopback and automatic threading.
 
 The 116,885,504-byte ISO has SHA-256 `f0c936e97a8ecf368c6fb7b2539757884314fdf1f7b1af0e843162a5ecc3b572`; its split files are preserved at Git commit `b63178b`. The integrated AVX2 build's full 8,192-token context and real hardware boot have not been verified. Its 2,048-token check should not be confused with the earlier baseline's 8,000-token check. A separate CI comparison boots two instances of this exact ISO with normal and masked CPU features to exercise both backend selections.
+
+### Portable fallback versus AVX2 inside the same ISO
+
+GitHub run `42229907573` booted two copies of the tested ISO as KVM guests on the same AMD EPYC 7763 runner. One guest had AVX, AVX2, FMA, F16C and BMI2 masked and selected the portable backend; the other selected AVX2. Both used 1 GiB guest RAM, the same two pinned host logical CPUs, two inference threads, the same model, and the same test-only networking/GRUB selection. After warmup, three 40-prompt-token/32-output-token completions were alternated between guests:
+
+| Median | Portable | AVX2 |
+| --- | ---: | ---: |
+| Output throughput | 11.56 tokens/s | 94.47 tokens/s |
+| Prompt throughput | 12.93 tokens/s | 216.13 tokens/s |
+| Time to first text | 3.096 s | 0.188 s |
+| Completion time | 5.867 s | 0.525 s |
+
+This is 8.17x generation and 16.71x prompt throughput for this workload, attributable to the selected CPU code paths and feature masks—not an 8x improvement from the OS alone. It is a small model and short prompt on one machine; results can vary by model, hardware and thread count. Masking AVX in a VM is not a test of a physical pre-SSE4.2 machine. Both backends booted and generated text; only the AVX2 path has passed the separate 2,048-token test in this ISO. Raw samples and setup are in `results/adaptive/42229907573/report.txt`.
