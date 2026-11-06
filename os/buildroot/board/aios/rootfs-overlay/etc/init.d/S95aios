@@ -21,6 +21,7 @@ start() {
                     aios.network=1) AIOS_LISTEN=0.0.0.0 ;;
                     aios.threads=2) AIOS_THREADS=2 ;;
                     aios.autotune=1) AIOS_THREADS=autotune ;;
+                    aios.ubatch=128) AIOS_UBATCH=128 ;;
                 esac
             done
             ;;
@@ -62,12 +63,18 @@ start() {
     # Reject oversized requests by default rather than silently dropping input.
     # Context shift remains an explicit trusted-configuration choice.
     set -- --threads "$AIOS_THREADS" --ctx-size "$AIOS_CONTEXT" --no-webui
+    case "${AIOS_UBATCH:-auto}" in
+        auto) ;;
+        128) set -- "$@" --ubatch-size 128 ;;
+        *) echo "AIOS: AIOS_UBATCH must be auto or 128" >&2; return 1 ;;
+    esac
     case "${AIOS_CONTEXT_SHIFT:-0}" in
         0) set -- "$@" --no-context-shift ;;
         1) ;;
         *) echo "AIOS: AIOS_CONTEXT_SHIFT must be 0 or 1" >&2; return 1 ;;
     esac
     echo "AIOS: inference backend=$VARIANT threads=$AIOS_THREADS"
+    echo "AIOS: prompt microbatch=${AIOS_UBATCH:-auto}"
     if ! start-stop-daemon -S -b -m -p "$PIDFILE" -c aios \
         -x "$BACKEND" -- \
         -m "$MODEL" --api-key-file "$KEY" \

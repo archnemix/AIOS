@@ -16,7 +16,7 @@ adaptive = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(adaptive)
 
 
-def test_image(source, destination, tree):
+def test_image(source, destination, tree, kernel_args=''):
     (tree / 'boot/grub').mkdir(parents=True)
     for name in ('bzImage', 'rootfs.cpio.gz', 'grub/grub.cfg'):
         subprocess.run(['xorriso', '-osirrox', 'on', '-indev', str(source), '-extract',
@@ -28,7 +28,7 @@ def test_image(source, destination, tree):
     if 'set default=0' not in config or 'aios.network=1' not in config:
         raise RuntimeError('expected GRUB entries not found')
     grub.write_text(config.replace('set default=0', 'set default=1', 1).replace(
-        'aios.network=1', 'aios.network=1 aios.threads=2', 1))
+        'aios.network=1', 'aios.network=1 aios.threads=2 ' + kernel_args, 1))
     subprocess.run(['grub-mkrescue', '-o', str(destination), str(tree)], check=True,
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 

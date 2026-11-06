@@ -99,3 +99,7 @@ A slow older ISO job published after a newer one; the optimized ISO later replac
 ## Matched ISO compiler comparison
 
 Run 42239159231 compared the prior O2 ISO with the O3 AVX2 ISO on the same AMD EPYC 7763 runner, using KVM guests with two pinned logical CPUs, two inference threads, 1 GiB RAM and the same model. After warmup, three alternating short-completion samples had median prompt throughput 213.62 versus 241.30 tokens/s and generation 91.41 versus 100.50 tokens/s, with median end-to-end latency 0.535 versus 0.487 seconds. This is approximately 13.0% faster prompt processing and 9.9% faster generation for this short test. Both image hashes were verified, but the images also differ in tuner packaging and were booted in fixed order. This is an inference-build comparison, not an OS-only speedup or a guarantee on other workloads.
+
+## Prompt microbatch option
+
+The two Intel sweeps showed better 2,048-token prefill for physical microbatch 128 than 512 at batch 512, while upstream's default microbatch is 512. We added explicit experimental local/network GRUB entries for microbatch 128 and a build-time `AIOS_UBATCH` setting, leaving upstream's default unchanged. The next ISO smoke test must boot the new entry and generate text. A same-ISO KVM comparison script was prepared for a 2,048-token prompt; the optimum may differ on other hardware and models, and the observed native microbenchmarks are not a substitute for testing the actual image.
