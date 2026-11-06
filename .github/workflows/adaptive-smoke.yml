@@ -13,8 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install QEMU and ISO tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools
+          timeout 120 sudo apt-get update -o Acquire::Retries=1 || echo "Using cached package indexes"
+          timeout 300 sudo apt-get install -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools
           if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
       - name: Verify image and test both backends
         id: test
