@@ -1,0 +1,1 @@
+initial comparison: portable and AVX2 kernels

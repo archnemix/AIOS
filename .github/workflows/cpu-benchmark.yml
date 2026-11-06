@@ -1,0 +1,48 @@
+name: CPU kernel comparison
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-cpu-bench.txt]
+permissions:
+  contents: write
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare native kernels on one runner
+        id: bench
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output/cpu-bench output/llama
+          curl -fsSL --retry 3 https://codeload.github.com/ggml-org/llama.cpp/tar.gz/74d4f5b041ad837153b0e90fc864b8290e01d8d5 -o output/llama.tar.gz
+          echo '8dd9fcc7c17f972673960ffdcc7521f52de5a9ec594aa6acebd9dfd8c17c0a5c  output/llama.tar.gz' | sha256sum -c -
+          tar xzf output/llama.tar.gz -C output/llama --strip-components=1
+          ./scripts/download-model.sh "$PWD/output/model.gguf" > output/cpu-bench/download.log 2>&1
+          ./scripts/cpu_bench/run.sh "$PWD/output/llama" "$PWD/output/model.gguf" "$PWD/output/cpu-bench" > output/cpu-bench/summary.log 2>&1
+      - name: Publish compact results in repository
+        if: always()
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.bench.outcome }}
+          RUN_ID: ${{ github.run_id }}
+          SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p "results/cpu/$RUN_ID"
+          echo "source=$SOURCE outcome=$OUTCOME" > "results/cpu/$RUN_ID/status.txt"
+          if [ -f output/cpu-bench/results.json ]; then cp output/cpu-bench/results.json "results/cpu/$RUN_ID/results.json"; fi
+          for f in summary.log configure-baseline.log configure-avx2.log build-baseline.log build-avx2.log download.log baseline-stderr.log avx2-stderr.log; do
+            if [ -f "output/cpu-bench/$f" ]; then tail -n 100 "output/cpu-bench/$f" > "results/cpu/$RUN_ID/$f"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          git add "results/cpu/$RUN_ID"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record CPU benchmark $RUN_ID"
+            git push origin HEAD:arena/bce98461-aios
+          fi
