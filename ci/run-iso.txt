@@ -1,1 +1,2 @@
 ISO build trigger: calibration with bounded minimal dependencies
+2026-11-06T14:38:45Z compiler-O3
