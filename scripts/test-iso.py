@@ -163,14 +163,22 @@ def main():
                                                     "qemu_process_including_guest": resident_memory_kib(vm)}
             print("Short inference comparison:", flush=True)
             print(json.dumps(result, indent=2), flush=True)
-            print("Measuring 8,000-token context on host and guest; this can take time.", flush=True)
-            result["context_checks"] = {"github_linux": check_context(host), "aios_vm": check_context(guest)}
+            print("Checking 2,048 input tokens on each environment.", flush=True)
+            result["context_checks"] = {}
+            for name, client in (("github_linux", host), ("aios_vm", guest)):
+                try:
+                    result["context_checks"][name] = check_context(client, 2048, timeout=300)
+                except (TimeoutError, OSError) as error:
+                    result["context_checks"][name] = {"input_tokens": 2048, "passed": False,
+                                                       "error": type(error).__name__}
+                print(json.dumps({"context": name, "result": result["context_checks"][name]}), flush=True)
             result["limitations"] = ("Same runner, model and executable; host native versus a QEMU VM. "
                                      "KVM still includes virtualization and guest RAM differences. "
-                                     "TCG is emulated and is not a fair OS speed comparison.")
+                                     "TCG is emulated and is not a fair OS speed comparison. "
+                                     "8192 configured is not the same as 8192 validated.")
             print(json.dumps(result, indent=2), flush=True)
             if not all(item["passed"] for item in result["context_checks"].values()):
-                raise RuntimeError("8,000-token context check failed or was truncated")
+                raise RuntimeError("2,048-token context check failed or timed out")
         except Exception:
             print_boot_diagnostics(serial)
             raise

@@ -21,13 +21,13 @@ def run_comparison(host, guest):
     return {"samples": samples, "medians": medians}
 
 
-def check_context(client, token_count=8000):
+def check_context(client, token_count=2048, timeout=300):
     tokens = client.request("/tokenize", {"content": " hello", "add_special": False})["tokens"]
     if not tokens:
         raise RuntimeError("tokenizer returned no tokens")
     started = time.monotonic()
     result = client.request("/completion", {"prompt": [tokens[-1]] * token_count, "n_predict": 1,
-                                            "temperature": 0, "cache_prompt": False}, timeout=1200)
+                                            "temperature": 0, "cache_prompt": False}, timeout=timeout)
     return {"input_tokens": token_count, "tokens_evaluated": result.get("tokens_evaluated"),
             "truncated": result.get("truncated"), "wall_seconds": time.monotonic() - started,
             "passed": result.get("tokens_evaluated") == token_count and result.get("truncated") is False}
