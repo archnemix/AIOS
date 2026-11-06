@@ -24,3 +24,4 @@
 - Add experimental 128-token prompt-microbatch boot entries and a same-image prefill comparison; image testing pending.
 - Verified an 8,000-token prompt and demonstrated same-slot shared-prefix reuse on the optimized ISO; measured KV precision tradeoffs without changing defaults.
 - Verified the default oversized-input rejection in a new booted O3 ISO.
+- Boot-tested the experimental microbatch-128 profile and its inference path.
