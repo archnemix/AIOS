@@ -1,1 +1,1 @@
-ISO build trigger: prebuilt toolchain and context comparison
+ISO build trigger: initramfs and serial diagnostics

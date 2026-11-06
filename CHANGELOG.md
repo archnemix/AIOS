@@ -10,3 +10,4 @@
 
 - Add a Linux CPU inference appliance prototype with an authenticated llama.cpp API gateway.
 - Add CPU affinity reporting, an example systemd unit, tests, and deployment and benchmark documentation.
+- Restore Buildroot's initramfs `/init`, enable virtio RNG, and add filtered boot diagnostics after an initial QEMU readiness timeout.

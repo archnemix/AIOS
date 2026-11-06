@@ -1,0 +1,5 @@
+# Initramfs support and an entropy source for a fresh boot key.
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_RD_GZIP=y
+CONFIG_HW_RANDOM=y
+CONFIG_HW_RANDOM_VIRTIO=y

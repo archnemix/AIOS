@@ -42,6 +42,22 @@ def stop(process):
         process.wait()
 
 
+def print_boot_diagnostics(serial):
+    if not serial.exists():
+        print("DIAGNOSTIC: QEMU produced no serial log", flush=True)
+        return
+    # Never publish the credential or inference request/response logs.
+    allowed = []
+    for line in serial.read_text(errors="replace").splitlines():
+        if any(word in line.lower() for word in ("token", "api_key", "authorization", "prompt")):
+            continue
+        if line.startswith("AIOS:") or re.match(r"^\[\s*\d+\.\d+\]", line):
+            allowed.append(line[:400])
+    print("DIAGNOSTIC: sanitized boot log (kernel and AIOS messages only):", flush=True)
+    for line in allowed[-100:]:
+        print(line, flush=True)
+
+
 def resident_memory_kib(process):
     status = Path(f"/proc/{process.pid}/status").read_text()
     match = re.search(r"^VmRSS:\s*(\d+) kB", status, re.MULTILINE)
@@ -79,7 +95,7 @@ def main():
         qemu = affinity + ["qemu-system-x86_64", *accel, "-m", "1024", "-smp", "2",
                "-display", "none", "-monitor", "none", "-no-reboot", "-serial", f"file:{serial}",
                "-cdrom", str(iso), "-boot", "d", "-netdev", "user,id=n0,hostfwd=tcp:127.0.0.1:18080-:8080",
-               "-device", "virtio-net-pci,netdev=n0"]
+               "-device", "virtio-net-pci,netdev=n0", "-device", "virtio-rng-pci"]
         boot_start = time.monotonic()
         vm = subprocess.Popen(qemu, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         baseline = None
@@ -151,6 +167,9 @@ def main():
             print(json.dumps(result, indent=2), flush=True)
             if not all(item["passed"] for item in result["context_checks"].values()):
                 raise RuntimeError("8,000-token context check failed or was truncated")
+        except Exception:
+            print_boot_diagnostics(serial)
+            raise
         finally:
             stop(baseline)
             stop(vm)
