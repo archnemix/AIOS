@@ -1,0 +1,77 @@
+{
+  "cpu": "AMD EPYC 7763 64-Core Processor",
+  "kernel": "7.0.0-1017-azure",
+  "acceleration": "KVM",
+  "cpu_affinity": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "guest_ram_mib": 1024,
+  "samples": {
+    "default": [
+      {
+        "wall_seconds": 13.934036589000016,
+        "input_tokens": 2048,
+        "tokens_evaluated": 2048,
+        "prompt_tokens_processed": 2048,
+        "prompt_ms": 13930.154,
+        "truncated": false,
+        "generated_tokens": 1
+      },
+      {
+        "wall_seconds": 13.906831420000003,
+        "input_tokens": 2048,
+        "tokens_evaluated": 2048,
+        "prompt_tokens_processed": 2048,
+        "prompt_ms": 13902.741,
+        "truncated": false,
+        "generated_tokens": 1
+      },
+      {
+        "wall_seconds": 13.859554407000019,
+        "input_tokens": 2048,
+        "tokens_evaluated": 2048,
+        "prompt_tokens_processed": 2048,
+        "prompt_ms": 13855.992,
+        "truncated": false,
+        "generated_tokens": 1
+      }
+    ],
+    "ubatch128": [
+      {
+        "wall_seconds": 12.851819632999991,
+        "input_tokens": 2048,
+        "tokens_evaluated": 2048,
+        "prompt_tokens_processed": 2048,
+        "prompt_ms": 12847.723,
+        "truncated": false,
+        "generated_tokens": 1
+      },
+      {
+        "wall_seconds": 12.819690088000016,
+        "input_tokens": 2048,
+        "tokens_evaluated": 2048,
+        "prompt_tokens_processed": 2048,
+        "prompt_ms": 12815.896,
+        "truncated": false,
+        "generated_tokens": 1
+      },
+      {
+        "wall_seconds": 12.773610130999941,
+        "input_tokens": 2048,
+        "tokens_evaluated": 2048,
+        "prompt_tokens_processed": 2048,
+        "prompt_ms": 12769.464,
+        "truncated": false,
+        "generated_tokens": 1
+      }
+    ]
+  },
+  "median_prompt_ms": {
+    "default": 13902.741,
+    "ubatch128": 12815.896
+  },
+  "ubatch128_speedup": 1.0848044490997741,
+  "limitations": "Identical ISO and workload, fixed boot order, one model and synthetic repeated-token input. Three samples; not an OS-only comparison or a guarantee on other hardware or prompts."
+}
