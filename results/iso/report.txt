@@ -1,0 +1,54 @@
+# ISO build result
+
+Source commit: f020926ed8f245ea817053eea73a6bc986a1dd3f
+Workflow run: 42202660692
+Build and smoke test: failure
+
+## Unit test summary
+test_rejects_keys_that_could_disable_or_weaken_auth (test_image_config.KeyValidationTests.test_rejects_keys_that_could_disable_or_weaken_auth) ... ok
+test_generates_private_key_and_refuses_overwrite (test_keygen.KeygenTests.test_generates_private_key_and_refuses_overwrite) ... ok
+test_invalid_uid_is_rejected (test_keygen.KeygenTests.test_invalid_uid_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 1.640s
+
+OK
+
+## Model download summary
+  1 89.1M    1 1139k    0     0  1205k      0  0:01:15 --:--:--  0:01:15 1205k100 89.1M  100 89.1M    0     0  55.7M      0  0:00:01  0:00:01 --:--:--  134M
+/home/runner/work/AIOS/AIOS/output/model.gguf.download: OK
+
+## Build summary
+printf '   	rm -rf /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/usr/lib/udev/hwdb.d/ /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/etc/udev/hwdb.d/\n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   	if [ ! -e /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/init ]; then /usr/bin/install -m 0755 fs/cpio/init /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/init; fi\n	mkdir -p /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/targ
+echo "find /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/run/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+echo "find /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/tmp/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   \n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   \n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   	cd /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target && find . | LC_ALL=C sort | cpio  --quiet -o -H newc > /home/runner/work/AIOS/AIOS/output/iso/images/rootfs.cpio\n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+chmod a+x /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+PATH="/home/runner/work/AIOS/AIOS/output/iso/host/bin:/home/runner/work/AIOS/AIOS/output/iso/host/sbin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr
+rootdir=/home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target
+table='/home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/full_devices_table.txt'
+PATH="/home/runner/work/AIOS/AIOS/output/iso/host/bin:/home/runner/work/AIOS/AIOS/output/iso/host/sbin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr
+ln -snf /home/runner/work/AIOS/AIOS/output/iso/host/x86_64-buildroot-linux-gnu/sysroot /home/runner/work/AIOS/AIOS/output/iso/staging
+make: Leaving directory '/home/runner/work/AIOS/AIOS/output/buildroot'
+xorriso 1.5.6 : RockRidge filesystem manipulator, libburnia project.
+
+Drive current: -outdev 'stdio:/home/runner/work/AIOS/AIOS/output/iso/aios.iso'
+Media current: stdio file, overwriteable
+Media status : is blank
+Media summary: 0 sessions, 0 data blocks, 0 data, 74.3g free
+Added to ISO image: directory '/'='/tmp/grub.Wnv7By'
+xorriso : UPDATE :     588 files added in 1 seconds
+Added to ISO image: directory '/'='/home/runner/work/AIOS/AIOS/output/iso/iso-tree'
+xorriso : UPDATE :     593 files added in 1 seconds
+xorriso : NOTE : Copying to System Area: 512 bytes from file '/usr/lib/grub/i386-pc/boot_hybrid.img'
+ISO image produced: 55590 sectors
+Written to medium : 55590 sectors at LBA 0
+Writing to 'stdio:/home/runner/work/AIOS/AIOS/output/iso/aios.iso' completed successfully.
+
+ISO: /home/runner/work/AIOS/AIOS/output/iso/aios.iso
+
+## QEMU smoke test
+FAIL: RuntimeError: guest did not become ready within 600 seconds
