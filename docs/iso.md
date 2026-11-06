@@ -12,7 +12,7 @@ mkdir -p output
 ./scripts/build-iso.sh /path/to/buildroot "$PWD/output/model.gguf"
 ```
 
-The download script verifies the model against the SHA-256 pinned in the repository. `build-iso.sh` accepts any explicitly provided model; verify custom files yourself. Output is `output/iso/aios.iso` and a checksum. This is a BIOS x86-64 boot target; UEFI and physical hardware boot are not yet verified. The ISO is not an installer, and its filesystem and key are not persistent. It is not guaranteed to fit any particular size until measured.
+The ISO configuration also downloads the Buildroot-pinned Bootlin x86-64 glibc toolchain, avoiding a full compiler build. The download script verifies the model against the SHA-256 pinned in the repository. `build-iso.sh` accepts any explicitly provided model; verify custom files yourself. Output is `output/iso/aios.iso` and a checksum. This is a BIOS x86-64 boot target; UEFI and physical hardware boot are not yet verified. The ISO is not an installer, and its filesystem and key are not persistent. It is not guaranteed to fit any particular size until measured.
 
 ## Boot and use
 
