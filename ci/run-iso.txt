@@ -1,1 +1,1 @@
-ISO build trigger: optional model-specific thread calibration
+ISO build trigger: calibration with bounded minimal dependencies
