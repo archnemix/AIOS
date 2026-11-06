@@ -25,3 +25,7 @@ Run repository tests with `python3 -m unittest discover -s tests -v`. See [techn
 ## Model-integrated ISO
 
 An experimental BIOS ISO build embeds the 135M-parameter SmolLM2 model and boots the server without a separate model disk. See [docs/iso.md](docs/iso.md) for building, security, and the GitHub Actions QEMU test. A completed, tested ISO is not yet guaranteed; consult the CI result report once the workflow has run.
+
+## Experimental CPU adaptation
+
+The image build now includes a portable server and an AVX2 server, selecting the latter only when the processor and Linux expose the required features. It also reports CPU topology, cache and available host memory and chooses a conservative starting thread count. A standalone same-machine kernel test showed a large improvement on one AMD runner; the newly integrated image still needs its own boot and inference validation. See [technical.md](technical.md) for results and limitations.

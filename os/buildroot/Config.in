@@ -1,2 +1,3 @@
 source "$BR2_EXTERNAL_AIOS_PATH/package/llama-cpp/Config.in"
 source "$BR2_EXTERNAL_AIOS_PATH/package/aios-keygen/Config.in"
+source "$BR2_EXTERNAL_AIOS_PATH/package/aios-hardware/Config.in"

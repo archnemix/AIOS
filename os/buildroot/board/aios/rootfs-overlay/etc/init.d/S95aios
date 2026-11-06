@@ -38,8 +38,20 @@ start() {
         [ "$AIOS_MODEL_MODE" = external ] && umount "$DATA"
         return 1
     fi
+    if [ "$AIOS_THREADS" = auto ]; then
+        AIOS_THREADS=$(/usr/bin/aios-hardware --threads) || return 1
+    fi
+    /usr/bin/aios-hardware --report
+    VARIANT=$(/usr/libexec/aios-select-backend)
+    BACKEND=/usr/bin/llama-server
+    if [ "$VARIANT" = avx2 ] && [ -x /usr/bin/llama-server-avx2 ]; then
+        BACKEND=/usr/bin/llama-server-avx2
+    else
+        VARIANT=portable
+    fi
+    echo "AIOS: inference backend=$VARIANT threads=$AIOS_THREADS"
     if ! start-stop-daemon -S -b -m -p "$PIDFILE" -c aios \
-        -x /usr/bin/llama-server -- \
+        -x "$BACKEND" -- \
         -m "$MODEL" --api-key-file "$KEY" \
         --host "$AIOS_LISTEN" --port "$AIOS_PORT" \
         --threads "$AIOS_THREADS" --ctx-size "$AIOS_CONTEXT" --no-webui; then
@@ -54,7 +66,9 @@ start() {
     fi
 }
 stop() {
-    start-stop-daemon -K -p "$PIDFILE" -x /usr/bin/llama-server
+    for executable in /usr/bin/llama-server /usr/bin/llama-server-avx2; do
+        start-stop-daemon -K -p "$PIDFILE" -x "$executable" 2>/dev/null && break
+    done
     rm -f "$PIDFILE"
     umount "$DATA" 2>/dev/null || :
 }

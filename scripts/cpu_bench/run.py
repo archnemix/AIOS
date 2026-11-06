@@ -20,7 +20,7 @@ def flags_for_all_cpus():
 
 def main():
     baseline, avx2, model, out = sys.argv[1:]
-    required = {'avx', 'avx2', 'fma', 'f16c', 'bmi2'}
+    required = {'sse4_2', 'avx', 'avx2', 'fma', 'f16c', 'bmi2'}
     if not required <= flags_for_all_cpus():
         raise RuntimeError('CPU/OS does not expose required AVX2 features on every CPU')
     available = sorted(os.sched_getaffinity(0))

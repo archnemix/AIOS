@@ -1,0 +1,19 @@
+#!/bin/sh
+# Linux exposes AVX only when the OS enables its extended register state. Check
+# every listed CPU so migration across heterogeneous cores cannot select an
+# instruction set missing on another core. An unreadable file fails closed.
+CPUINFO=${1:-/proc/cpuinfo}
+if awk -F: '
+    /^flags[[:space:]]*:/ {
+        count++
+        split($2, fields, /[[:space:]]+/)
+        delete found
+        for (i in fields) found[fields[i]] = 1
+        if (!found["sse4_2"] || !found["avx"] || !found["avx2"] || !found["fma"] || !found["f16c"] || !found["bmi2"]) bad = 1
+    }
+    END { if (count == 0 || bad) exit 1 }
+' "$CPUINFO" 2>/dev/null; then
+    echo avx2
+else
+    echo portable
+fi

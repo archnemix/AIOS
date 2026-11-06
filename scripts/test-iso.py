@@ -138,7 +138,19 @@ def main():
             if not loaders:
                 raise RuntimeError("Buildroot's glibc loader was not found")
             libraries = f"{target / 'lib'}:{target / 'usr/lib'}"
-            cmd = affinity + [str(loaders[0]), "--library-path", libraries, str(target / "usr/bin/llama-server"),
+            # Compare the exact same engine variant as the guest. The boot log
+            # states what was selected; do not compare AVX2 against portable.
+            boot_log = serial.read_text(errors="replace")
+            selected = re.search(r"AIOS: inference backend=(portable|avx2)\b", boot_log)
+            if not selected:
+                raise RuntimeError("guest did not report its inference backend")
+            variant = selected.group(1)
+            if variant == "avx2":
+                selector = target / "usr/libexec/aios-select-backend"
+                if subprocess.check_output([str(selector)], text=True).strip() != "avx2":
+                    raise RuntimeError("guest AVX2 backend cannot safely run on the host")
+            binary = target / ("usr/bin/llama-server-avx2" if variant == "avx2" else "usr/bin/llama-server")
+            cmd = affinity + [str(loaders[0]), "--library-path", libraries, str(binary),
                               "-m", str(model), "--api-key-file", str(key), "--host", "127.0.0.1", "--port", "18081",
                               "--threads", "2", "--ctx-size", "8192", "--no-webui"]
             baseline = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -149,6 +161,7 @@ def main():
             memory = Path("/proc/meminfo").read_text()
             memory_match = re.search(r"^MemTotal:\s*(\d+) kB", memory, re.MULTILINE)
             result = {"acceleration": "KVM" if kvm else "TCG", "guest_ram_mib": 1024,
+                      "inference_backend": variant,
                       "host_cpu": cpu_match.group(1) if cpu_match else "unknown",
                       "host_mem_total_kib": int(memory_match.group(1)) if memory_match else None,
                       "logical_cpus_pinned": cpus, "threads": 2, "context_configured": 8192,

@@ -1,0 +1,4 @@
+config BR2_PACKAGE_AIOS_HARDWARE
+	bool "AIOS CPU and memory probe"
+	help
+	  Reports CPU topology and recommends a conservative thread count.
