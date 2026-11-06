@@ -1,1 +1,1 @@
-ISO build trigger: parallel boot correction verification
+ISO build trigger: API startup diagnostics and incremental results

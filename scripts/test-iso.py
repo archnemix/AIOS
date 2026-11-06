@@ -51,7 +51,9 @@ def print_boot_diagnostics(serial):
     for line in serial.read_text(errors="replace").splitlines():
         if any(word in line.lower() for word in ("token", "api_key", "authorization", "prompt")):
             continue
-        if line.startswith("AIOS:") or re.match(r"^\[\s*\d+\.\d+\]", line):
+        low = line.lower()
+        if (line.startswith("AIOS:") or re.match(r"^\[\s*\d+\.\d+\]", line)
+                or any(word in low for word in ("error", "fatal", "failed", "listening", "eth0", "udhcpc"))):
             allowed.append(line[:400])
     print("DIAGNOSTIC: sanitized boot log (kernel and AIOS messages only):", flush=True)
     for line in allowed[-100:]:
@@ -159,6 +161,8 @@ def main():
                 medians["aios_vm"]["output_tokens_per_second"] / host_rate if host_rate else None)
             result["rss_kib_after_short_tests"] = {"host_server": resident_memory_kib(baseline),
                                                     "qemu_process_including_guest": resident_memory_kib(vm)}
+            print("Short inference comparison:", flush=True)
+            print(json.dumps(result, indent=2), flush=True)
             print("Measuring 8,000-token context on host and guest; this can take time.", flush=True)
             result["context_checks"] = {"github_linux": check_context(host), "aios_vm": check_context(guest)}
             result["limitations"] = ("Same runner, model and executable; host native versus a QEMU VM. "
