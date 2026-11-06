@@ -1,0 +1,44 @@
+8000-token check: {"wall_seconds": 88.453700546, "input_tokens": 8000, "tokens_evaluated": 8000, "prompt_tokens_processed": 8000, "prompt_ms": 88449.88, "truncated": false, "generated_tokens": 1}
+{
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "kernel": "7.0.0-1017-azure",
+  "acceleration": "KVM",
+  "cpu_affinity": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "guest_ram_mib": 1024,
+  "context_configured": 8192,
+  "long_context": {
+    "wall_seconds": 88.453700546,
+    "input_tokens": 8000,
+    "tokens_evaluated": 8000,
+    "prompt_tokens_processed": 8000,
+    "prompt_ms": 88449.88,
+    "truncated": false,
+    "generated_tokens": 1
+  },
+  "shared_prefix": {
+    "cold": {
+      "wall_seconds": 30.711968944000006,
+      "input_tokens": 4112,
+      "tokens_evaluated": 4112,
+      "prompt_tokens_processed": 4112,
+      "prompt_ms": 30695.242,
+      "truncated": false,
+      "generated_tokens": 1
+    },
+    "cached": {
+      "wall_seconds": 0.2055904360000227,
+      "input_tokens": 4112,
+      "tokens_evaluated": 4112,
+      "prompt_tokens_processed": 16,
+      "prompt_ms": 186.205,
+      "truncated": false,
+      "generated_tokens": 1
+    },
+    "wall_speedup": 149.38422983837933
+  },
+  "limitations": "Synthetic repeated-token prompts, one output token, one measurement each; not a model-quality test. Prompt caching requires a matching prefix in the same slot and is not guaranteed under concurrent use. KVM is not a bare-metal OS comparison."
+}
