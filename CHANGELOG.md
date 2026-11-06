@@ -17,3 +17,4 @@
 - Verify both portable and AVX2 inference paths in feature-masked KVM guests and record the same-runner comparison.
 - Add opt-in, bounded model-specific thread calibration with a conservative fallback and a separate tuned-boot smoke test.
 - Benchmark `-O2` versus `-O3` and apply `-O3` only to the AVX2 inference engine; ISO-level validation pending.
+- Validated the opt-in thread tuner in a KVM boot and recorded initial Intel kernel/flash-attention sweep measurements.

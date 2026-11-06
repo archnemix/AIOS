@@ -81,3 +81,9 @@ The initial calibration ISO job stalled during runner dependency setup, before t
 ## Compiler optimization level
 
 We found Buildroot defaults to `-O2` while the earlier native benchmark used CMake's Release `-O3`. Rather than infer the effect from results on different runners, run 42234637751 compared the flags on one EPYC 9V45 with the same AVX2 engine and model. `-O3` improved 2,048-token prefill from 184.35 to 258.46 tokens/s, and 256-token prefill from 349.76 to 405.22 tokens/s; short generation improved from 107.90 to 115.48 tokens/s, though the O2 generation samples were noisy. The order was fixed, and this was a native benchmark. We therefore changed only the AVX2 inference build to append `-O3`, retaining all other target flags and leaving the rest of the OS at the existing settings. It remains subject to image-level validation and a same-runner old-versus-new ISO comparison.
+
+## Initial tuning results and boot validation
+
+ISO run 42233580477 booted the tuner entry under KVM and completed inference after selecting one thread. Its ordinary boot also passed authentication, inference and the 2,048-input-token context test. The verified ISO SHA-256 is `851dc74c8096650176c2c4637d9643cc2c76bc2b78d04ea567e5c74c3ff760c5`; this image predates the separate O3 change.
+
+The first completed tuning sweep, runner 2 of 42231629326, used an Intel Xeon Platinum 8573C. With two threads, batch 512 and microbatch 128, 256-token prompt throughput was 274.18 tokens/s for AVX2 with llamafile kernels, 197.63 without them, and 328.77 for AVX512; generation was 139.95, 139.30 and 137.26 tokens/s respectively, with flash attention off. For 2,048 prompt tokens with batch/microbatch 512, flash off versus on was 161.02 versus 127.98 tokens/s on AVX2. These fixed-order, single-host microbenchmarks do not justify a universal AVX512 or flash default. The other runner and the O3 ISO tests are pending.
