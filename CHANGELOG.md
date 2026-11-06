@@ -20,3 +20,4 @@
 - Validated the opt-in thread tuner in a KVM boot and recorded initial Intel kernel/flash-attention sweep measurements.
 - Reject overlong prompts by default rather than silently dropping context; trusted builds can explicitly enable context shifting. ISO boot validation pending.
 - Serialize ISO publishing and add near-limit and prefix-cache benchmarks.
+- Boot-tested the AVX2 `-O3` image and compared it with the earlier image on the same runner; short-prompt and generation throughput improved for the tested workload.
