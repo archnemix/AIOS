@@ -1,8 +1,8 @@
 # ISO build result
 
-Source commit: 14e43826fa10b22c1032d59f376e5ba3325f9de8
-Workflow run: 42208527000
-Build and smoke test: failure
+Source commit: d6a1e99659db05f1ed1259423142c262b8c04387
+Workflow run: 42208503255
+Build and smoke test: success
 
 ## Unit test summary
 test_rejects_keys_that_could_disable_or_weaken_auth (test_image_config.KeyValidationTests.test_rejects_keys_that_could_disable_or_weaken_auth) ... ok
@@ -10,12 +10,12 @@ test_generates_private_key_and_refuses_overwrite (test_keygen.KeygenTests.test_g
 test_invalid_uid_is_rejected (test_keygen.KeygenTests.test_invalid_uid_is_rejected) ... ok
 
 ----------------------------------------------------------------------
-Ran 16 tests in 2.337s
+Ran 16 tests in 2.218s
 
 OK
 
 ## Model download summary
- 44 89.1M   44 39.4M    0     0   101M      0 --:--:-- --:--:-- --:--:--  101M100 89.1M  100 89.1M    0     0   171M      0 --:--:-- --:--:-- --:--:--  379M
+ 73 89.1M   73 65.1M    0     0  58.4M      0  0:00:01  0:00:01 --:--:-- 58.4M100 89.1M  100 89.1M    0     0  69.4M      0  0:00:01  0:00:01 --:--:--  142M
 /home/runner/work/AIOS/AIOS/output/model.gguf.download: OK
 
 ## Build summary
@@ -39,7 +39,7 @@ Drive current: -outdev 'stdio:/home/runner/work/AIOS/AIOS/output/iso/aios.iso'
 Media current: stdio file, overwriteable
 Media status : is blank
 Media summary: 0 sessions, 0 data blocks, 0 data, 81.8g free
-Added to ISO image: directory '/'='/tmp/grub.gBOaLY'
+Added to ISO image: directory '/'='/tmp/grub.kIcB0s'
 xorriso : UPDATE :     588 files added in 1 seconds
 Added to ISO image: directory '/'='/home/runner/work/AIOS/AIOS/output/iso/iso-tree'
 xorriso : UPDATE :     593 files added in 1 seconds
@@ -54,6 +54,110 @@ ISO: /home/runner/work/AIOS/AIOS/output/iso/aios.iso
 PASS: ISO test copy booted; API rejected an invalid token and generated model text
 QEMU acceleration: KVM
 Measuring 8,000-token context on host and guest; this can take time.
-DIAGNOSTIC: sanitized boot log (kernel and AIOS messages only):
-AIOS: starting at http://0.0.0.0:8080 (model loading may take time)
-FAIL: TimeoutError: timed out
+{
+  "acceleration": "KVM",
+  "guest_ram_mib": 1024,
+  "host_cpu": "AMD EPYC 9V45 96-Core Processor",
+  "host_mem_total_kib": 16367524,
+  "logical_cpus_pinned": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "context_configured": 8192,
+  "host_kernel": "7.0.0-1017-azure",
+  "boot_to_ready_seconds": 12.026351688999966,
+  "iso_bytes": 113948672,
+  "comparison": {
+    "samples": {
+      "github_linux": [
+        {
+          "ttft_seconds": 1.6926198279999198,
+          "wall_seconds": 3.500818826999989,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 23.647747877171234,
+          "output_tokens_per_second": 17.6969812268211
+        },
+        {
+          "ttft_seconds": 1.6871750710000697,
+          "wall_seconds": 3.504035108000039,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 23.721640778449363,
+          "output_tokens_per_second": 17.612756038560928
+        },
+        {
+          "ttft_seconds": 1.711426640999889,
+          "wall_seconds": 3.522663614999942,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 23.382200183199537,
+          "output_tokens_per_second": 17.66814692610132
+        }
+      ],
+      "aios_vm": [
+        {
+          "ttft_seconds": 1.7090831680000065,
+          "wall_seconds": 3.5074799490000714,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 23.43576520409915,
+          "output_tokens_per_second": 17.792327948188742
+        },
+        {
+          "ttft_seconds": 1.6888725720000366,
+          "wall_seconds": 3.4896604220000427,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 23.701231753014206,
+          "output_tokens_per_second": 17.76888346444363
+        },
+        {
+          "ttft_seconds": 1.7030755349999254,
+          "wall_seconds": 3.5055532960000164,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 23.515579071134628,
+          "output_tokens_per_second": 17.753071420051537
+        }
+      ]
+    },
+    "medians": {
+      "github_linux": {
+        "ttft_seconds": 1.6926198279999198,
+        "wall_seconds": 3.504035108000039,
+        "prompt_tokens_per_second": 23.647747877171234,
+        "output_tokens_per_second": 17.66814692610132
+      },
+      "aios_vm": {
+        "ttft_seconds": 1.7030755349999254,
+        "wall_seconds": 3.5055532960000164,
+        "prompt_tokens_per_second": 23.515579071134628,
+        "output_tokens_per_second": 17.76888346444363
+      }
+    },
+    "guest_to_host_output_rate_ratio": 1.0057015904816533
+  },
+  "rss_kib_after_short_tests": {
+    "host_server": 328868,
+    "qemu_process_including_guest": 517264
+  },
+  "context_checks": {
+    "github_linux": {
+      "input_tokens": 8000,
+      "tokens_evaluated": 8000,
+      "truncated": false,
+      "wall_seconds": 866.00200149,
+      "passed": true
+    },
+    "aios_vm": {
+      "input_tokens": 8000,
+      "tokens_evaluated": 8000,
+      "truncated": false,
+      "wall_seconds": 905.736179426,
+      "passed": true
+    }
+  },
+  "limitations": "Same runner, model and executable; host native versus a QEMU VM. KVM still includes virtualization and guest RAM differences. TCG is emulated and is not a fair OS speed comparison."
+}
