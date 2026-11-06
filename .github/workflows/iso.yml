@@ -46,7 +46,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p results/iso
-          rm -f results/iso/aios.iso.part-* results/iso/aios.iso.sha256
           {
             echo "# ISO build result"
             echo ""
@@ -69,6 +68,7 @@ jobs:
           # A successful boot and inference can yield an ISO even if the later
           # performance or context checks failed; the report records the failure.
           if [ -f output/smoke.log ] && grep -q '^PASS: ISO test copy booted;' output/smoke.log; then
+            rm -f results/iso/aios.iso.part-* results/iso/aios.iso.sha256
             split -b 45M -d -a 2 output/iso/aios.iso results/iso/aios.iso.part-
             (cd output/iso && sha256sum aios.iso) > results/iso/aios.iso.sha256
           fi
@@ -77,6 +77,12 @@ jobs:
           # Preserve newer code changes or a previous run's report; only publish
           # files in results/iso on top of the current remote branch tip.
           git fetch origin arena/bce98461-aios
+          if ! grep -q '^PASS: ISO test copy booted;' output/smoke.log 2>/dev/null; then
+            # Keep the last boot-tested image when a later build/test fails.
+            while IFS= read -r path; do
+              git restore --source=origin/arena/bce98461-aios --worktree -- "$path"
+            done < <(git ls-tree -r --name-only origin/arena/bce98461-aios results/iso | grep -E 'aios\.iso\.(part-[0-9]+|sha256)$' || true)
+          fi
           git reset --mixed origin/arena/bce98461-aios
           git add -A results/iso
           if ! git diff --cached --quiet; then
