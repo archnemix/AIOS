@@ -1,1 +1,1 @@
-Compare portable and AVX2 paths; bounded package installation
+Compare portable and AVX2 paths; fix extracted GRUB permissions

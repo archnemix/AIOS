@@ -74,6 +74,7 @@ def main():
                             '/boot/' + name, str(tree / 'boot' / name)], check=True,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         grub = tree / 'boot/grub/grub.cfg'
+        grub.chmod(0o644)
         config = grub.read_text()
         if 'set default=0' not in config or 'aios.network=1' not in config:
             raise RuntimeError('expected GRUB entries not found')

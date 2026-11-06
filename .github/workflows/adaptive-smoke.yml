@@ -13,8 +13,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install QEMU and ISO tools
         run: |
-          timeout 120 sudo apt-get update -o Acquire::Retries=1 || echo "Using cached package indexes"
-          timeout 300 sudo apt-get install -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools
+          mkdir -p output/adaptive
+          opts='-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::ForceIPv4=true -o DPkg::Lock::Timeout=30'
+          timeout 120 sudo apt-get update $opts > output/adaptive/apt.log 2>&1 || echo "Using cached package indexes" >> output/adaptive/apt.log
+          timeout 240 sudo apt-get install $opts -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools >> output/adaptive/apt.log 2>&1
           if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
       - name: Verify image and test both backends
         id: test
@@ -37,7 +39,7 @@ jobs:
           set -euo pipefail
           mkdir -p "results/adaptive/$RUN_ID"
           echo "source=$SOURCE outcome=$OUTCOME" > "results/adaptive/$RUN_ID/status.txt"
-          for f in report.txt actual.sha256; do
+          for f in report.txt actual.sha256 apt.log; do
             if [ -f "output/adaptive/$f" ]; then cp "output/adaptive/$f" "results/adaptive/$RUN_ID/$f"; fi
           done
           git config user.name 'github-actions[bot]'
