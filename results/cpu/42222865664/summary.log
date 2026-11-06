@@ -1,0 +1,100 @@
+        "split_mode": "layer",
+        "main_gpu": 0,
+        "no_kv_offload": false,
+        "flash_attn": false,
+        "tensor_split": "0.00",
+        "use_mmap": true,
+        "embeddings": false,
+        "n_prompt": 128,
+        "n_gen": 0,
+        "test_time": "2026-11-06T13:11:04Z",
+        "avg_ns": 498975755,
+        "stddev_ns": 147728,
+        "avg_ts": 256.525505,
+        "stddev_ts": 0.07596,
+        "samples_ns": [
+          498806890,
+          499039278,
+          499081097
+        ],
+        "samples_ts": [
+          256.612,
+          256.493,
+          256.471
+        ]
+      },
+      {
+        "build_commit": "f4034e7",
+        "build_number": 1,
+        "cpu_info": "AMD EPYC 7763 64-Core Processor",
+        "gpu_info": "",
+        "backends": "CPU",
+        "model_filename": "/home/runner/work/AIOS/AIOS/output/model.gguf",
+        "model_type": "llama ?B Q3_K - Medium",
+        "model_size": 91725156,
+        "model_n_params": 134515584,
+        "n_batch": 2048,
+        "n_ubatch": 512,
+        "n_threads": 2,
+        "cpu_mask": "0x0",
+        "cpu_strict": false,
+        "poll": 50,
+        "type_k": "f16",
+        "type_v": "f16",
+        "n_gpu_layers": 0,
+        "split_mode": "layer",
+        "main_gpu": 0,
+        "no_kv_offload": false,
+        "flash_attn": false,
+        "tensor_split": "0.00",
+        "use_mmap": true,
+        "embeddings": false,
+        "n_prompt": 0,
+        "n_gen": 32,
+        "test_time": "2026-11-06T13:11:06Z",
+        "avg_ns": 299197811,
+        "stddev_ns": 1511746,
+        "avg_ts": 106.954477,
+        "stddev_ts": 0.541234,
+        "samples_ns": [
+          297542563,
+          300504908,
+          299545964
+        ],
+        "samples_ts": [
+          107.548,
+          106.487,
+          106.828
+        ]
+      }
+    ]
+  },
+  "cpu": "AMD EPYC 7763 64-Core Processor",
+  "memory": "MemTotal:       16367524 kB",
+  "cache": [
+    {
+      "level": "1",
+      "type": "Data",
+      "size": "32K",
+      "shared_cpu_list": "0-1"
+    },
+    {
+      "level": "1",
+      "type": "Instruction",
+      "size": "32K",
+      "shared_cpu_list": "0-1"
+    },
+    {
+      "level": "2",
+      "type": "Unified",
+      "size": "512K",
+      "shared_cpu_list": "0-1"
+    },
+    {
+      "level": "3",
+      "type": "Unified",
+      "size": "32768K",
+      "shared_cpu_list": "0-3"
+    }
+  ]
+}
