@@ -1,7 +1,7 @@
 # ISO build result
 
-Source commit: 8576588a2874b7aa114ec70a1cbcb76740a26c6b
-Workflow run: 42207598447
+Source commit: 14e43826fa10b22c1032d59f376e5ba3325f9de8
+Workflow run: 42208527000
 Build and smoke test: failure
 
 ## Unit test summary
@@ -10,12 +10,12 @@ test_generates_private_key_and_refuses_overwrite (test_keygen.KeygenTests.test_g
 test_invalid_uid_is_rejected (test_keygen.KeygenTests.test_invalid_uid_is_rejected) ... ok
 
 ----------------------------------------------------------------------
-Ran 16 tests in 3.717s
+Ran 16 tests in 2.337s
 
 OK
 
 ## Model download summary
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0 99 89.1M   99 88.7M    0     0  73.3M      0  0:00:01  0:00:01 --:--:-- 89.3M100 89.1M  100 89.1M    0     0  73.2M      0  0:00:01  0:00:01 --:--:-- 89.1M
+ 44 89.1M   44 39.4M    0     0   101M      0 --:--:-- --:--:-- --:--:--  101M100 89.1M  100 89.1M    0     0   171M      0 --:--:-- --:--:-- --:--:--  379M
 /home/runner/work/AIOS/AIOS/output/model.gguf.download: OK
 
 ## Build summary
@@ -39,16 +39,21 @@ Drive current: -outdev 'stdio:/home/runner/work/AIOS/AIOS/output/iso/aios.iso'
 Media current: stdio file, overwriteable
 Media status : is blank
 Media summary: 0 sessions, 0 data blocks, 0 data, 81.8g free
-Added to ISO image: directory '/'='/tmp/grub.54qkH7'
+Added to ISO image: directory '/'='/tmp/grub.gBOaLY'
 xorriso : UPDATE :     588 files added in 1 seconds
 Added to ISO image: directory '/'='/home/runner/work/AIOS/AIOS/output/iso/iso-tree'
 xorriso : UPDATE :     593 files added in 1 seconds
 xorriso : NOTE : Copying to System Area: 512 bytes from file '/usr/lib/grub/i386-pc/boot_hybrid.img'
-ISO image produced: 55643 sectors
-Written to medium : 55643 sectors at LBA 0
+ISO image produced: 55639 sectors
+Written to medium : 55639 sectors at LBA 0
 Writing to 'stdio:/home/runner/work/AIOS/AIOS/output/iso/aios.iso' completed successfully.
 
 ISO: /home/runner/work/AIOS/AIOS/output/iso/aios.iso
 
 ## QEMU smoke test
-FAIL: RuntimeError: server did not become ready
+PASS: ISO test copy booted; API rejected an invalid token and generated model text
+QEMU acceleration: KVM
+Measuring 8,000-token context on host and guest; this can take time.
+DIAGNOSTIC: sanitized boot log (kernel and AIOS messages only):
+AIOS: starting at http://0.0.0.0:8080 (model loading may take time)
+FAIL: TimeoutError: timed out
