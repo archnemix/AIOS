@@ -51,6 +51,9 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git fetch origin arena/bce98461-aios
           git reset --mixed origin/arena/bce98461-aios
+          # Keep the untracked run-specific report, but clean tracked files
+          # changed by resetting an older checkout to the current branch tip.
+          git restore --worktree .
           git add "results/iso-compiler/$RUN_ID"
           if ! git diff --cached --quiet; then
             git commit -m "Record ISO compiler comparison $RUN_ID"

@@ -59,12 +59,20 @@ start() {
     if [ "$AIOS_THREADS" = auto ]; then
         AIOS_THREADS=$(/usr/bin/aios-hardware --threads) || return 1
     fi
+    # Reject oversized requests by default rather than silently dropping input.
+    # Context shift remains an explicit trusted-configuration choice.
+    set -- --threads "$AIOS_THREADS" --ctx-size "$AIOS_CONTEXT" --no-webui
+    case "${AIOS_CONTEXT_SHIFT:-0}" in
+        0) set -- "$@" --no-context-shift ;;
+        1) ;;
+        *) echo "AIOS: AIOS_CONTEXT_SHIFT must be 0 or 1" >&2; return 1 ;;
+    esac
     echo "AIOS: inference backend=$VARIANT threads=$AIOS_THREADS"
     if ! start-stop-daemon -S -b -m -p "$PIDFILE" -c aios \
         -x "$BACKEND" -- \
         -m "$MODEL" --api-key-file "$KEY" \
         --host "$AIOS_LISTEN" --port "$AIOS_PORT" \
-        --threads "$AIOS_THREADS" --ctx-size "$AIOS_CONTEXT" --no-webui; then
+        "$@"; then
         echo "AIOS: unable to start server" >&2
         [ "$AIOS_MODEL_MODE" = external ] && umount "$DATA"
         return 1

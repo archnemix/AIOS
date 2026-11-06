@@ -126,6 +126,17 @@ def main():
                     raise RuntimeError(f"expected HTTP 401, got {error.code}") from error
             else:
                 raise RuntimeError("invalid token was accepted")
+            token_ids = guest.request("/tokenize", {"content": " hello", "add_special": False})["tokens"]
+            if not token_ids:
+                raise RuntimeError("tokenizer returned no tokens")
+            try:
+                guest.request("/completion", {"prompt": [token_ids[-1]] * 8192, "n_predict": 1}, timeout=120)
+            except urllib.error.HTTPError as error:
+                if error.code != 400:
+                    raise RuntimeError(f"expected HTTP 400 for oversized input, got {error.code}") from error
+            else:
+                raise RuntimeError("oversized prompt was not rejected")
+            print("PASS: oversized prompt rejected rather than silently truncated", flush=True)
             reply = guest.request("/v1/chat/completions", {"messages": [{"role": "user", "content": "Say hello."}],
                                                             "max_tokens": 16, "temperature": 0}, timeout=600)
             if not reply.get("choices") or not reply["choices"][0].get("message", {}).get("content", "").strip():
@@ -153,7 +164,7 @@ def main():
             binary = target / ("usr/bin/llama-server-avx2" if variant == "avx2" else "usr/bin/llama-server")
             cmd = affinity + [str(loaders[0]), "--library-path", libraries, str(binary),
                               "-m", str(model), "--api-key-file", str(key), "--host", "127.0.0.1", "--port", "18081",
-                              "--threads", "2", "--ctx-size", "8192", "--no-webui"]
+                              "--threads", "2", "--ctx-size", "8192", "--no-webui", "--no-context-shift"]
             baseline = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             host = Client(18081, key.read_text().strip())
             wait_for_health(host, baseline, 600)

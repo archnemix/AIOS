@@ -18,3 +18,5 @@
 - Add opt-in, bounded model-specific thread calibration with a conservative fallback and a separate tuned-boot smoke test.
 - Benchmark `-O2` versus `-O3` and apply `-O3` only to the AVX2 inference engine; ISO-level validation pending.
 - Validated the opt-in thread tuner in a KVM boot and recorded initial Intel kernel/flash-attention sweep measurements.
+- Reject overlong prompts by default rather than silently dropping context; trusted builds can explicitly enable context shifting. ISO boot validation pending.
+- Serialize ISO publishing and add near-limit and prefix-cache benchmarks.

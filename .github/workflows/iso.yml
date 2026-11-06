@@ -99,8 +99,14 @@ jobs:
             done < <(git ls-tree -r --name-only origin/arena/bce98461-aios results/iso | grep -E 'aios\.iso\.(part-[0-9]+|sha256)$' || true)
           fi
           git reset --mixed origin/arena/bce98461-aios
+          git restore --worktree . ':(exclude)results/iso'
           git add -A results/iso
           if ! git diff --cached --quiet; then
             git commit -m "Record ISO build result for $SOURCE_SHA"
-            git push origin HEAD:arena/bce98461-aios
+            for attempt in 1 2 3 4; do
+              if git push origin HEAD:arena/bce98461-aios; then exit 0; fi
+              git pull --rebase origin arena/bce98461-aios
+              sleep $((attempt * 3))
+            done
+            exit 1
           fi
