@@ -24,7 +24,7 @@ For example, after selecting the network entry in QEMU's serial boot menu, this 
 qemu-system-x86_64 -m 1024 -smp 2 -nographic \
   -cdrom output/iso/aios.iso -boot d \
   -netdev user,id=n0,hostfwd=tcp:127.0.0.1:8080-:8080 \
-  -device virtio-net-pci,netdev=n0
+  -device virtio-net-pci,netdev=n0 -device virtio-rng-pci
 ```
 
 Set `AIOS_API_TOKEN` on the host to the displayed token, then use the request in the main README. Do not put the token in public logs, screenshots or shared consoles. `/health`, `/models`, and `/v1/models` are public in the pinned upstream server. Other routes require the token. There is no rate limiting, TLS, watchdog, secure boot, persistent key, update mechanism, or production hardening. To make an external URL, separately configure a hardened TLS reverse proxy and a tunnel such as Cloudflare or ngrok on the host. The ISO itself does not include or automatically configure either service.

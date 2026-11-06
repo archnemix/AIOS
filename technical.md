@@ -18,7 +18,7 @@ No speedup has been measured or promised. Compare the same machine, model and qu
 
 ## Future work
 
-Build and verify a reproducible bootable image, manage the inference engine and models, account for cgroup quotas and memory, add bounded concurrency and robust request timeouts, provide secure tunnel management, and run controlled hardware benchmarks. No GitHub Actions workflow is included yet: a meaningful same-hardware baseline cannot be inferred from unrelated hosted runners, and writing logs to a repository would require carefully scoped write permissions and redaction.
+Build and verify a reproducible bootable image, manage the inference engine and models, account for cgroup quotas and memory, add bounded concurrency and robust request timeouts, provide secure tunnel management, and run controlled hardware benchmarks. The later ISO workflow runs its comparison on one runner and records sanitized results; virtualization remains a significant confounder.
 
 ## Experimental native OS target
 
@@ -42,4 +42,4 @@ The automated comparison runs the same Buildroot-built binary with the same targ
 
 The ISO default is now `AIOS_CONTEXT=8192` with one upstream default parallel slot. This setting covers prompt plus generation, not 8,192 input tokens plus arbitrary output; concurrent slots would divide the total context. SmolLM2's model metadata reports an 8,192-token training context. The CI script independently sends 8,000 token IDs and requires an untruncated evaluation for both servers, but this test has not succeeded until the workflow report says so. The optimum memory and context limit for other models and hardware remain unmeasured.
 
-GitHub run 42202660692 produced an ISO of 113,868,320 bytes, but its QEMU readiness check timed out; that image is not confirmed bootable. The test did not capture boot diagnostics. A subsequent change uses Buildroot's `/init` rather than bypassing its devtmpfs setup, enables virtio RNG, and records filtered startup diagnostics on failure. The change has not yet been validated by that earlier run.
+GitHub run 42202660692 produced an ISO of 113,848,320 bytes, but its QEMU readiness check timed out; that image is not confirmed bootable. The test did not capture boot diagnostics. A subsequent change uses Buildroot's `/init` rather than bypassing its devtmpfs setup, enables virtio RNG, and records filtered startup diagnostics on failure. The change has not yet been validated by that earlier run.
