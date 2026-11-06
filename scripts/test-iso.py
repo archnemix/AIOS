@@ -42,6 +42,12 @@ def stop(process):
         process.wait()
 
 
+def resident_memory_kib(process):
+    status = Path(f"/proc/{process.pid}/status").read_text()
+    match = re.search(r"^VmRSS:\s*(\d+) kB", status, re.MULTILINE)
+    return int(match.group(1)) if match else None
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit("usage: test-iso.py BUILD_OUTPUT_DIRECTORY")
@@ -131,6 +137,12 @@ def main():
                       "host_kernel": platform.release(), "boot_to_ready_seconds": boot_seconds,
                       "iso_bytes": (output / "aios.iso").stat().st_size,
                       "comparison": run_comparison(host, guest)}
+            medians = result["comparison"]["medians"]
+            host_rate = medians["github_linux"]["output_tokens_per_second"]
+            result["comparison"]["guest_to_host_output_rate_ratio"] = (
+                medians["aios_vm"]["output_tokens_per_second"] / host_rate if host_rate else None)
+            result["rss_kib_after_short_tests"] = {"host_server": resident_memory_kib(baseline),
+                                                    "qemu_process_including_guest": resident_memory_kib(vm)}
             print("Measuring 8,000-token context on host and guest; this can take time.", flush=True)
             result["context_checks"] = {"github_linux": check_context(host), "aios_vm": check_context(guest)}
             result["limitations"] = ("Same runner, model and executable; host native versus a QEMU VM. "
