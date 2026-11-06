@@ -1,101 +1,153 @@
 #!/usr/bin/env python3
-"""Boot a network-enabled copy of the ISO and exercise real model inference."""
+"""Boot AIOS and compare its inference with GitHub Linux on the same runner."""
 
 import json
 import os
+import platform
 import re
+import secrets
 import subprocess
 import sys
 import tempfile
 import time
 import urllib.error
-import urllib.request
 from pathlib import Path
 
+from iso_benchmark.client import Client
+from iso_benchmark.measure import check_context, run_comparison
 
-def request(url, token, payload=None):
-    data = None if payload is None else json.dumps(payload).encode()
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    with urllib.request.urlopen(urllib.request.Request(url, data=data, headers=headers), timeout=90) as response:
-        return response.status, json.load(response)
+
+def wait_for_health(client, process, seconds):
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError(f"server process exited ({process.returncode})")
+        try:
+            if client.request("/health").get("status") == "ok":
+                return
+        except (OSError, urllib.error.URLError, ValueError):
+            pass
+        time.sleep(2)
+    raise RuntimeError("server did not become ready")
+
+
+def stop(process):
+    if process is None:
+        return
+    process.terminate()
+    try:
+        process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait()
 
 
 def main():
     if len(sys.argv) != 2:
         sys.exit("usage: test-iso.py BUILD_OUTPUT_DIRECTORY")
     output = Path(sys.argv[1]).resolve()
-    # The release image defaults to loopback. Only the test copy selects LAN mode.
-    with tempfile.TemporaryDirectory() as temp:
-        temp = Path(temp)
+    target = output / "target"
+    model = target / "opt/aios/model.gguf"
+    cpus = sorted(os.sched_getaffinity(0))[:2]
+    if len(cpus) != 2:
+        raise RuntimeError("comparison requires two available logical CPUs")
+    affinity = ["taskset", "-c", ",".join(map(str, cpus))]
+    with tempfile.TemporaryDirectory() as directory:
+        temp = Path(directory)
         tree = temp / "tree"
         (tree / "boot/grub").mkdir(parents=True)
         for name in ("bzImage", "rootfs.cpio.gz"):
             os.link(output / "iso-tree/boot" / name, tree / "boot" / name)
         grub = (output / "iso-tree/boot/grub/grub.cfg").read_text()
-        if "set default=0" not in grub:
-            raise RuntimeError("GRUB default entry not found")
-        (tree / "boot/grub/grub.cfg").write_text(grub.replace("set default=0", "set default=1", 1))
+        if "set default=0" not in grub or "aios.network=1" not in grub:
+            raise RuntimeError("required GRUB entries not found")
+        grub = grub.replace("set default=0", "set default=1", 1)
+        grub = grub.replace("aios.network=1", "aios.network=1 aios.threads=2", 1)
+        (tree / "boot/grub/grub.cfg").write_text(grub)
         iso = temp / "test.iso"
         subprocess.run(["grub-mkrescue", "-o", str(iso), str(tree)], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         serial = temp / "serial.log"
-        cmd = ["qemu-system-x86_64", "-machine", "accel=tcg", "-cpu", "max", "-m", "1024",
-               "-smp", "2", "-display", "none", "-monitor", "none", "-no-reboot",
-               "-serial", f"file:{serial}", "-cdrom", str(iso), "-boot", "d",
-               "-netdev", "user,id=n0,hostfwd=tcp:127.0.0.1:18080-:8080",
+        kvm = os.access("/dev/kvm", os.R_OK | os.W_OK)
+        accel = ["-machine", "accel=kvm", "-cpu", "host"] if kvm else ["-machine", "accel=tcg", "-cpu", "max"]
+        qemu = affinity + ["qemu-system-x86_64", *accel, "-m", "1024", "-smp", "2",
+               "-display", "none", "-monitor", "none", "-no-reboot", "-serial", f"file:{serial}",
+               "-cdrom", str(iso), "-boot", "d", "-netdev", "user,id=n0,hostfwd=tcp:127.0.0.1:18080-:8080",
                "-device", "virtio-net-pci,netdev=n0"]
-        start = time.monotonic()
-        process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        boot_start = time.monotonic()
+        vm = subprocess.Popen(qemu, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        baseline = None
         try:
-            deadline = time.monotonic() + 600
             token = None
+            deadline = time.monotonic() + 600
             while time.monotonic() < deadline:
-                if process.poll() is not None:
-                    raise RuntimeError(f"QEMU exited early ({process.returncode})")
+                if vm.poll() is not None:
+                    raise RuntimeError(f"QEMU exited early ({vm.returncode})")
                 if serial.exists():
                     match = re.search(r"AIOS_BOOT_TOKEN=([0-9a-f]{64})", serial.read_text(errors="replace"))
                     if match:
                         token = match.group(1)
-                if token:
-                    try:
-                        status, _ = request("http://127.0.0.1:18080/health", token)
-                        if status == 200:
-                            break
-                    except (OSError, urllib.error.URLError, ValueError):
-                        pass
+                        break
                 time.sleep(2)
-            else:
-                raise RuntimeError("guest did not become ready within 600 seconds")
+            if token is None:
+                raise RuntimeError("guest did not print boot token within 600 seconds")
+            guest = Client(18080, token)
+            wait_for_health(guest, vm, 600)
+            boot_seconds = time.monotonic() - boot_start
             try:
-                request("http://127.0.0.1:18080/v1/chat/completions", "invalid",
-                        {"messages": [{"role": "user", "content": "Hi"}], "max_tokens": 4})
+                Client(18080, "invalid").request("/completion", {"prompt": "Hi", "n_predict": 1})
             except urllib.error.HTTPError as error:
                 if error.code != 401:
-                    raise RuntimeError(f"expected 401 for invalid token, got {error.code}") from error
+                    raise RuntimeError(f"expected HTTP 401, got {error.code}") from error
             else:
                 raise RuntimeError("invalid token was accepted")
-            _, result = request("http://127.0.0.1:18080/v1/chat/completions", token,
-                                {"messages": [{"role": "user", "content": "Say hello."}],
-                                 "max_tokens": 16, "temperature": 0})
-            choices = result.get("choices", [])
-            if not choices or not choices[0].get("message", {}).get("content", "").strip():
-                raise RuntimeError("inference returned no text")
-            print("PASS: QEMU boot, health, authentication, and model text generation")
-            print(f"Elapsed: {time.monotonic() - start:.1f} seconds (emulation; not a benchmark)")
-            print("Test ISO differs only in selecting the network-enabled GRUB entry by default.")
+            reply = guest.request("/v1/chat/completions", {"messages": [{"role": "user", "content": "Say hello."}],
+                                                            "max_tokens": 16, "temperature": 0}, timeout=600)
+            if not reply.get("choices") or not reply["choices"][0].get("message", {}).get("content", "").strip():
+                raise RuntimeError("guest inference returned no text")
+            print("PASS: ISO test copy booted; API rejected an invalid token and generated model text", flush=True)
+            print(f"QEMU acceleration: {'KVM' if kvm else 'TCG software emulation'}", flush=True)
+            key = temp / "host.key"
+            key.write_text(secrets.token_hex(32) + "\n")
+            key.chmod(0o600)
+            loaders = list((target / "lib").glob("ld-linux-x86-64.so.*"))
+            if not loaders:
+                raise RuntimeError("Buildroot's glibc loader was not found")
+            libraries = f"{target / 'lib'}:{target / 'usr/lib'}"
+            cmd = affinity + [str(loaders[0]), "--library-path", libraries, str(target / "usr/bin/llama-server"),
+                              "-m", str(model), "--api-key-file", str(key), "--host", "127.0.0.1", "--port", "18081",
+                              "--threads", "2", "--ctx-size", "8192", "--no-webui"]
+            baseline = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            host = Client(18081, key.read_text().strip())
+            wait_for_health(host, baseline, 600)
+            cpu_info = Path("/proc/cpuinfo").read_text()
+            cpu_match = re.search(r"^model name\s*:\s*(.+)$", cpu_info, re.MULTILINE)
+            memory = Path("/proc/meminfo").read_text()
+            memory_match = re.search(r"^MemTotal:\s*(\d+) kB", memory, re.MULTILINE)
+            result = {"acceleration": "KVM" if kvm else "TCG", "guest_ram_mib": 1024,
+                      "host_cpu": cpu_match.group(1) if cpu_match else "unknown",
+                      "host_mem_total_kib": int(memory_match.group(1)) if memory_match else None,
+                      "logical_cpus_pinned": cpus, "threads": 2, "context_configured": 8192,
+                      "host_kernel": platform.release(), "boot_to_ready_seconds": boot_seconds,
+                      "iso_bytes": (output / "aios.iso").stat().st_size,
+                      "comparison": run_comparison(host, guest)}
+            print("Measuring 8,000-token context on host and guest; this can take time.", flush=True)
+            result["context_checks"] = {"github_linux": check_context(host), "aios_vm": check_context(guest)}
+            result["limitations"] = ("Same runner, model and executable; host native versus a QEMU VM. "
+                                     "KVM still includes virtualization and guest RAM differences. "
+                                     "TCG is emulated and is not a fair OS speed comparison.")
+            print(json.dumps(result, indent=2), flush=True)
+            if not all(item["passed"] for item in result["context_checks"].values()):
+                raise RuntimeError("8,000-token context check failed or was truncated")
         finally:
-            process.terminate()
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait()
+            stop(baseline)
+            stop(vm)
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as error:
-        # Do not print serial logs, API keys, or model output.
+        # Never publish raw serial logs, key files, prompts or model outputs.
         print(f"FAIL: {type(error).__name__}: {error}", file=sys.stderr)
         sys.exit(1)

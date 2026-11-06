@@ -17,7 +17,10 @@ start() {
             KEY=/run/aios/api.key
             # The network-enabled GRUB entry is an explicit opt-in.
             for arg in $(cat /proc/cmdline); do
-                [ "$arg" = "aios.network=1" ] && AIOS_LISTEN=0.0.0.0
+                case "$arg" in
+                    aios.network=1) AIOS_LISTEN=0.0.0.0 ;;
+                    aios.threads=2) AIOS_THREADS=2 ;;
+                esac
             done
             ;;
         external)

@@ -40,3 +40,9 @@ sha256sum aios.iso
 ```
 
 The hashes must match. The test copy differs from the delivered ISO in its default GRUB entry; the embedded kernel, rootfs and model are the same. QEMU emulation is not a valid speedup benchmark. The workflow does not publish its serial log or boot token.
+
+## Throughput and context comparison
+
+The current test configures one sequence and an 8,192-token context for both servers. It sends 8,000 token IDs and checks the server's evaluated-token count and `truncated` flag on each; this tests one near-limit input, not model quality or every possible prompt. The model's published training context is 8,192 tokens, shared between input and generated output. Larger settings require separate testing and may degrade quality. Available RAM also limits larger models and contexts; the OS alone does not define a universal maximum.
+
+After warmup the test alternates three identical 32-token streaming completions per environment, reporting each run and median prompt processing and generation tokens per second, time to first text, and total latency. It runs the *same* Buildroot-built server binary, target libraries, model, two CPU threads, context setting, and pinned logical CPUs on the GitHub Linux host and in the AIOS VM. It checks invalid-token rejection and records ISO size, CPU and guest acceleration. If KVM is unavailable the AIOS guest uses TCG software emulation: its throughput must **not** be treated as an operating-system speed comparison. Even with KVM, guest virtualization, host load and memory differences confound an OS-only speedup claim; use bare-metal, same-hardware measurements for that. The report is evidence only once the workflow has completed.

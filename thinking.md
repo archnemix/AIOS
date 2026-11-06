@@ -23,3 +23,9 @@ The next requested milestone is an actual small ISO with an integrated model and
 The ISO uses an initramfs and a separate GRUB network opt-in. Embedding a shared API key would make every image insecure, so a small C utility blocks for the kernel RNG and generates a fresh per-boot key, displayed only on the console. This is still not appropriate for public exposure without TLS and additional controls. The QEMU test switches only the GRUB default on a temporary copy so it can reach the guest while the release defaults to loopback.
 
 The workflow writes a compact report and, on successful boot and inference, split ISO files to the branch because CI artifacts are not assumed accessible. It is one job, not a large matrix. Workflow access and a full build remain to be verified; no test result should be inferred merely from the workflow definition.
+
+## Boot, throughput and context comparison
+
+The user requested measured results rather than a build recipe. The prior ISO workflow was still running, so its success was not assumed. We extended the next run to compare the exact same Buildroot server, libraries and 135M model on the host and in the guest, with pinned CPUs, equal inference threads and context, warmed-up alternating samples, and timing and context checks. We increased the image's configured one-slot context from 2,048 to the model's 8,192-token training length, and added an actual 8,000-input-token untruncated test. We retain raw samples as well as medians.
+
+The guest is virtualized while the normal GitHub Linux host is native. Hardware KVM mitigates but does not remove that confounder; TCG makes throughput comparisons particularly misleading. A same-machine bare-metal experiment remains necessary before claiming that the OS alone improves speed. A bootable ISO can be published when the smoke test passes even if a later benchmark fails, with that failure recorded separately.

@@ -19,12 +19,11 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: arena/bce98461-aios
       - name: Install build and test dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential file wget cpio unzip rsync bc bison flex libncurses-dev libssl-dev xorriso grub-pc-bin grub-common mtools qemu-system-x86
+          if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
       - name: Build and test
         id: build
         shell: bash
@@ -67,15 +66,20 @@ jobs:
             echo "## QEMU smoke test"
             test ! -f output/smoke.log || cat output/smoke.log
           } > results/iso/report.txt
-          if [ "$BUILD_OUTCOME" = success ]; then
+          # A successful boot and inference can yield an ISO even if the later
+          # performance or context checks failed; the report records the failure.
+          if [ -f output/smoke.log ] && grep -q '^PASS: ISO test copy booted;' output/smoke.log; then
             split -b 45M -d -a 2 output/iso/aios.iso results/iso/aios.iso.part-
             (cd output/iso && sha256sum aios.iso) > results/iso/aios.iso.sha256
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add results/iso
+          # Preserve newer code changes or a previous run's report; only publish
+          # files in results/iso on top of the current remote branch tip.
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          git add -A results/iso
           if ! git diff --cached --quiet; then
             git commit -m "Record ISO build result for $SOURCE_SHA"
-            git pull --rebase origin arena/bce98461-aios
             git push origin HEAD:arena/bce98461-aios
           fi

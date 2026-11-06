@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a same-runner native Linux versus AIOS VM inference comparison, streaming latency and 8,000-token context checks; configure 8,192 context tokens.
+
 - Add an experimental GRUB ISO target with a pinned, quantized 135M model, per-boot key generation, and a GitHub Actions QEMU inference test.
 
 - Add an experimental Buildroot x86-64 OS target with a pinned native CPU inference server, read-only model volume and key validation. Full image boot remains unverified.
