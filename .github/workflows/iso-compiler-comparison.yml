@@ -25,6 +25,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          grep -F "Source commit: $(git rev-parse 05d2a9f)" results/iso/report.txt > /dev/null
+          grep -F 'Build and smoke test: success' results/iso/report.txt > /dev/null
           for p in 00 01 02; do git show b63178b:results/iso/aios.iso.part-$p; done > output/iso-compiler/o2.iso
           git show b63178b:results/iso/aios.iso.sha256 | sed 's/aios.iso/o2.iso/' > output/iso-compiler/o2.sha256
           cat results/iso/aios.iso.part-* > output/iso-compiler/o3.iso
