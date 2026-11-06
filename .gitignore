@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+output/
+api.key
+model-data.img
+model-mount/
+*.gguf

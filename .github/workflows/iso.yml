@@ -1,0 +1,81 @@
+name: Build and test AIOS ISO
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-iso.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aios-iso-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  iso:
+    if: github.ref == 'refs/heads/arena/bce98461-aios'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: arena/bce98461-aios
+      - name: Install build and test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential file wget cpio unzip rsync bc bison flex libncurses-dev libssl-dev xorriso grub-pc-bin grub-common mtools qemu-system-x86
+      - name: Build and test
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output results/iso
+          python3 -m unittest discover -s tests -v > output/unit.log 2>&1
+          git clone --filter=blob:none https://github.com/buildroot/buildroot.git output/buildroot
+          git -C output/buildroot checkout 137a566bf5353831d97c068a4c22e6df5b4d07a0
+          ./scripts/download-model.sh "$PWD/output/model.gguf" > output/model.log 2>&1
+          ./scripts/build-iso.sh "$PWD/output/buildroot" "$PWD/output/model.gguf" > output/build.log 2>&1
+          python3 scripts/test-iso.py "$PWD/output/iso" > output/smoke.log 2>&1
+      - name: Record results and publish ISO parts to branch
+        if: always()
+        shell: bash
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          RUN_ID: ${{ github.run_id }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p results/iso
+          rm -f results/iso/aios.iso.part-* results/iso/aios.iso.sha256
+          {
+            echo "# ISO build result"
+            echo ""
+            echo "Source commit: $SOURCE_SHA"
+            echo "Workflow run: $RUN_ID"
+            echo "Build and smoke test: $BUILD_OUTCOME"
+            echo ""
+            echo "## Unit test summary"
+            test ! -f output/unit.log || tail -n 8 output/unit.log
+            echo ""
+            echo "## Model download summary"
+            test ! -f output/model.log || tail -n 2 output/model.log | cut -c1-300
+            echo ""
+            echo "## Build summary"
+            test ! -f output/build.log || tail -n 30 output/build.log | cut -c1-300
+            echo ""
+            echo "## QEMU smoke test"
+            test ! -f output/smoke.log || cat output/smoke.log
+          } > results/iso/report.txt
+          if [ "$BUILD_OUTCOME" = success ]; then
+            split -b 45M -d -a 2 output/iso/aios.iso results/iso/aios.iso.part-
+            (cd output/iso && sha256sum aios.iso) > results/iso/aios.iso.sha256
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add results/iso
+          if ! git diff --cached --quiet; then
+            git commit -m "Record ISO build result for $SOURCE_SHA"
+            git pull --rebase origin arena/bce98461-aios
+            git push origin HEAD:arena/bce98461-aios
+          fi

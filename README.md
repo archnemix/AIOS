@@ -1,1 +1,27 @@
 # AIOS
+
+AIOS is an early CPU-only inference appliance. Its first OS target is a minimal x86-64 Linux image built with Buildroot and a native C/C++ llama.cpp server. It has no desktop and disables the server's web UI. A Linux filesystem is still necessary, and AIOS is not a new kernel. The image build is **experimental and has not yet been boot-tested**.
+
+## Build and try the OS
+
+Follow [the image guide](docs/image.md) to build the kernel and root filesystem, create a separate model/key volume, and boot under QEMU. You need a Linux build machine, the Buildroot prerequisites, a compatible GGUF model, and sufficient disk, RAM and time. The image defaults to a local-only API; the guide explains how to expose it to a host for a QEMU test.
+
+Once the API is reachable, use the private key stored on the model volume:
+
+```sh
+curl http://127.0.0.1:8080/v1/chat/completions \
+  -H "Authorization: Bearer $AIOS_API_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"model":"local","messages":[{"role":"user","content":"Hello"}]}'
+```
+
+The service prints its configured listening URL on the console, but this is not a tunnel URL and does not prove the model loaded. The native server has no TLS. Do not expose it directly to the internet: use a hardened HTTPS proxy and access controls. A separately installed Cloudflare Quick Tunnel, ngrok, or another HTTPS tunnel can point to the host-side proxy; their printed URL is temporary unless configured otherwise. AIOS does not install or manage tunnels yet.
+
+## Prototype gateway
+
+The earlier Python gateway remains available for experiments on an existing Linux installation; it is **not part of the OS image**. See [technical.md](technical.md). The native engine does inference in both setups; changing the gateway language alone would not make model computation faster.
+
+Run repository tests with `python3 -m unittest discover -s tests -v`. See [technical.md](technical.md) for architecture, limitations and benchmarking, [thinking.md](thinking.md) for the engineering journal, and [CHANGELOG.md](CHANGELOG.md) for changes.
+
+## Model-integrated ISO
+
+An experimental BIOS ISO build embeds the 135M-parameter SmolLM2 model and boots the server without a separate model disk. See [docs/iso.md](docs/iso.md) for building, security, and the GitHub Actions QEMU test. A completed, tested ISO is not yet guaranteed; consult the CI result report once the workflow has run.

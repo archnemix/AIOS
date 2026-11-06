@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LLAMA_CPP
+	bool "AIOS llama.cpp server"
+	depends on BR2_INSTALL_LIBSTDCPP
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+	help
+	  CPU-only OpenAI-compatible inference server from llama.cpp.

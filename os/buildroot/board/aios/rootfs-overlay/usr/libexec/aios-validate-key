@@ -1,0 +1,4 @@
+#!/bin/sh
+# llama.cpp treats an empty key list as authentication disabled.
+[ "$#" -eq 1 ] && [ -f "$1" ] || exit 1
+awk 'length($0) < 32 || length($0) > 128 || $0 !~ /^[A-Za-z0-9_-]+$/ { bad = 1 } END { if (NR != 1 || bad) exit 1 }' "$1"

@@ -1,0 +1,4 @@
+config BR2_PACKAGE_AIOS_KEYGEN
+	bool "AIOS boot key generator"
+	help
+	  Generates an ephemeral API key using the kernel random number generator.

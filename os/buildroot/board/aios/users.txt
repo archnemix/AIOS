@@ -1,0 +1,2 @@
+# name uid group gid password home shell groups comment
+aios 1000 aios 1000 * - /bin/false - AIOS inference service

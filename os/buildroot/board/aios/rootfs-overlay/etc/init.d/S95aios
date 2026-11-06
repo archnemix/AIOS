@@ -1,0 +1,63 @@
+#!/bin/sh
+CONFIG=/etc/aios/server.conf
+PIDFILE=/var/run/aios.pid
+DATA=/data
+
+start() {
+    . "$CONFIG"
+    case "$AIOS_MODEL_MODE" in
+        embedded)
+            MODEL=/opt/aios/model.gguf
+            mkdir -p /run/aios
+            chmod 755 /run/aios
+            rm -f /run/aios/api.key
+            if ! /usr/bin/aios-keygen /run/aios/api.key 1000; then
+                echo "AIOS: failed to generate API key" >&2; return 1
+            fi
+            KEY=/run/aios/api.key
+            # The network-enabled GRUB entry is an explicit opt-in.
+            for arg in $(cat /proc/cmdline); do
+                [ "$arg" = "aios.network=1" ] && AIOS_LISTEN=0.0.0.0
+            done
+            ;;
+        external)
+            mkdir -p "$DATA"
+            if ! mount -t ext4 -o ro,nosuid,nodev,noexec "$AIOS_DATA_DEVICE" "$DATA"; then
+                echo "AIOS: unable to mount model volume" >&2; return 1
+            fi
+            MODEL=$DATA/model.gguf
+            KEY=$DATA/api.key
+            ;;
+        *) echo "AIOS: invalid model mode" >&2; return 1 ;;
+    esac
+    if [ ! -f "$MODEL" ] || ! /usr/libexec/aios-validate-key "$KEY"; then
+        echo "AIOS: model and one 32-128 character URL-safe API key required" >&2
+        [ "$AIOS_MODEL_MODE" = external ] && umount "$DATA"
+        return 1
+    fi
+    if ! start-stop-daemon -S -b -m -p "$PIDFILE" -c aios \
+        -x /usr/bin/llama-server -- \
+        -m "$MODEL" --api-key-file "$KEY" \
+        --host "$AIOS_LISTEN" --port "$AIOS_PORT" \
+        --threads "$AIOS_THREADS" --ctx-size "$AIOS_CONTEXT" --no-webui; then
+        echo "AIOS: unable to start server" >&2
+        [ "$AIOS_MODEL_MODE" = external ] && umount "$DATA"
+        return 1
+    fi
+    echo "AIOS: starting at http://$AIOS_LISTEN:$AIOS_PORT (model loading may take time)"
+    if [ "$AIOS_MODEL_MODE" = embedded ]; then
+        echo "AIOS_BOOT_TOKEN=$(cat "$KEY")"
+        echo "AIOS: keep this token private; it changes on every boot."
+    fi
+}
+stop() {
+    start-stop-daemon -K -p "$PIDFILE" -x /usr/bin/llama-server
+    rm -f "$PIDFILE"
+    umount "$DATA" 2>/dev/null || :
+}
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) stop; start ;;
+    *) echo "Usage: $0 {start|stop|restart}" >&2; exit 1 ;;
+esac
