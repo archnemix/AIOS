@@ -1,1 +1,1 @@
-ISO build trigger: initramfs and serial diagnostics
+ISO build trigger: parallel boot correction verification

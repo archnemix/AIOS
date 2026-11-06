@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: aios-iso-${{ github.ref }}
+  group: aios-iso-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
