@@ -70,3 +70,5 @@ The next build defaults to rejecting prompts that exceed the configured context 
 The AVX2 `-O3` image was boot-tested in run `42235774412` and compared with the preceding image in run `42239159231`. Its split files are preserved at commit `53a8e9c`; SHA-256: `f9d2f53463e5c0b25339d6e839ab0042f5837f9f276f6354aff91d1ddcdb8235`. This tested image does not yet include the newer oversized-input rejection.
 
 An upcoming image adds separate experimental boot entries using a 128-token prompt microbatch. On two Intel native tests this improved the tested 2,048-token prefill relative to 512, but results depend on CPU, model and workload. The ordinary boot entries keep the upstream default. The new entries require the next image and its boot test; they are not in the currently published O3 image.
+
+The O3 image passed an 8,000-input-token KVM test (with one output token) in run `42240488102`. In that same run, a warmed, identical 4,096-token prefix was reused for a follow-up request. This does not validate model quality across the entire context or guarantee cache hits for concurrent users. The configured 8,192-token limit includes generated output.

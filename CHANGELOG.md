@@ -22,3 +22,4 @@
 - Serialize ISO publishing and add near-limit and prefix-cache benchmarks.
 - Boot-tested the AVX2 `-O3` image and compared it with the earlier image on the same runner; short-prompt and generation throughput improved for the tested workload.
 - Add experimental 128-token prompt-microbatch boot entries and a same-image prefill comparison; image testing pending.
+- Verified an 8,000-token prompt and demonstrated same-slot shared-prefix reuse on the optimized ISO; measured KV precision tradeoffs without changing defaults.
