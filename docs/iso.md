@@ -62,3 +62,5 @@ The same adaptive ISO also passed a feature-masked fallback test in run `4222990
 ## Optional thread calibration
 
 The experimental tuned boot menu entries measure several thread counts for short model generation before starting the server. This adds up to 180 seconds of startup time; if tuning fails, AIOS falls back to the topology-based count. The test is limited to the installed model and a short generation workload and may not be optimal for long prompts. The default entries remain unchanged. This option requires an ISO built after the change; check the CI report for the tuned-boot result before relying on it.
+
+The tuner-enabled image was boot- and inference-tested in run `42233580477`, including the experimental tuned boot entry. Its exact split files are preserved at commit `5d2a65c`; SHA-256: `851dc74c8096650176c2c4637d9643cc2c76bc2b78d04ea567e5c74c3ff760c5`. This image predates the newer AVX2 compiler optimization. A later build is being tested separately and is not represented by this checksum.
