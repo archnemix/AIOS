@@ -16,7 +16,7 @@ jobs:
           mkdir -p output/adaptive
           opts='-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::ForceIPv4=true -o DPkg::Lock::Timeout=30'
           timeout 120 sudo apt-get update $opts > output/adaptive/apt.log 2>&1 || echo "Using cached package indexes" >> output/adaptive/apt.log
-          timeout 240 sudo apt-get install $opts -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools >> output/adaptive/apt.log 2>&1
+          timeout 600 sudo apt-get install $opts --no-install-recommends -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools >> output/adaptive/apt.log 2>&1
           if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
       - name: Verify image and test both backends
         id: test
