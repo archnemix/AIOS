@@ -45,3 +45,18 @@ The ISO default is now `AIOS_CONTEXT=8192` with one upstream default parallel sl
 GitHub run 42202660692 produced an ISO of 113,848,320 bytes, but its QEMU readiness check timed out; that image is not confirmed bootable. The test did not capture boot diagnostics. A subsequent change uses Buildroot's `/init` rather than bypassing its devtmpfs setup, enables virtio RNG, and records filtered startup diagnostics on failure. The change has not yet been validated by that earlier run.
 
 GitHub run 42208527000 booted the corrected test ISO using KVM, rejected an invalid token, and generated text from the embedded model. The delivered ISO differs from the test copy in GRUB's default selection and the two-thread test override. The subsequent 8,000-token context request timed out; no throughput or full-context result was recorded in that run.
+
+## Measured result: GitHub run 42208503255
+
+The QEMU test copy booted with KVM, refused an invalid key and generated text. The delivered ISO uses the same kernel, rootfs and model but defaults to the local-only GRUB entry; the test copy selected the network entry and fixed two threads. The ISO is 113,948,672 bytes with SHA-256 `f86a7ec1f3865742a9ffeae20a38c4acf0be0c564b4659b16582d38f6d37dddd`. BIOS QEMU boot was tested; UEFI and physical machines were not.
+
+On one GitHub runner (AMD EPYC 9V45, two pinned logical CPUs), three alternating samples after warmup produced these medians with the identical model, engine binary, target libraries, one sequence, two threads and 8,192 context:
+
+| Metric | GitHub Linux host | AIOS KVM guest |
+| --- | ---: | ---: |
+| Output tokens/second | 17.67 | 17.77 |
+| Prompt tokens/second | 23.65 | 23.52 |
+| Time to first text | 1.693 s | 1.703 s |
+| Total completion time | 3.504 s | 3.506 s |
+
+The 0.57% output-rate difference is too small and the experiment too confounded to claim an OS speedup. The host server process used 328,868 KiB RSS; the QEMU process, including the guest, used 517,264 KiB RSS. These are not directly comparable measures of OS memory consumption. The guest had 1 GiB allocated; host total memory was approximately 15.6 GiB. Each 8,000-token input was evaluated without truncation: host 866.0 s, guest 905.7 s. These long-prefill results show a practical latency limitation even though both tests fit. They do not establish that all 8,192 tokens can be used as input in addition to generated tokens. Raw samples and metadata are in `results/benchmarks/42208503255.json`.
