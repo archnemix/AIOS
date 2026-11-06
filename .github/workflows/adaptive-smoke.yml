@@ -1,0 +1,51 @@
+name: Adaptive ISO comparison
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-adaptive-test.txt]
+permissions:
+  contents: write
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU and ISO tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools
+          if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
+      - name: Verify image and test both backends
+        id: test
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output/adaptive
+          cat results/iso/aios.iso.part-* > output/adaptive/aios.iso
+          (cd output/adaptive && sha256sum aios.iso) > output/adaptive/actual.sha256
+          diff results/iso/aios.iso.sha256 output/adaptive/actual.sha256
+          python3 scripts/test-adaptive-iso.py output/adaptive/aios.iso > output/adaptive/report.txt 2>&1
+      - name: Record result
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ steps.test.outcome }}
+          SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p "results/adaptive/$RUN_ID"
+          echo "source=$SOURCE outcome=$OUTCOME" > "results/adaptive/$RUN_ID/status.txt"
+          for f in report.txt actual.sha256; do
+            if [ -f "output/adaptive/$f" ]; then cp "output/adaptive/$f" "results/adaptive/$RUN_ID/$f"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          git add "results/adaptive/$RUN_ID"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record adaptive ISO comparison $RUN_ID"
+            git push origin HEAD:arena/bce98461-aios
+          fi

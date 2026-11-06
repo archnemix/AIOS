@@ -13,3 +13,4 @@
 - Restore Buildroot's initramfs `/init`, enable virtio RNG, and add filtered boot diagnostics after an initial QEMU readiness timeout.
 - Record a successful KVM boot, inference and 8,000-token context comparison against the same server on GitHub Linux.
 - Add experimental runtime AVX2 selection, portable x86-64 fallback, CPU topology reporting and conservative automatic thread selection; record a same-runner kernel benchmark.
+- Boot-test the adaptive AVX2 ISO with model inference and a 2,048-token context; add a separate feature-masked portable/AVX2 guest comparison.

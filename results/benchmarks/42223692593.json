@@ -1,0 +1,108 @@
+{
+  "acceleration": "KVM",
+  "guest_ram_mib": 1024,
+  "inference_backend": "avx2",
+  "host_cpu": "AMD EPYC 7763 64-Core Processor",
+  "host_mem_total_kib": 16367520,
+  "logical_cpus_pinned": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "context_configured": 8192,
+  "host_kernel": "7.0.0-1017-azure",
+  "boot_to_ready_seconds": 16.055417116999934,
+  "iso_bytes": 116885504,
+  "comparison": {
+    "samples": {
+      "github_linux": [
+        {
+          "ttft_seconds": 0.1878366629998709,
+          "wall_seconds": 0.5269866029998411,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 215.32117845280968,
+          "output_tokens_per_second": 94.33795392770175
+        },
+        {
+          "ttft_seconds": 0.1871928850000586,
+          "wall_seconds": 0.5246237400001519,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 215.55440593205725,
+          "output_tokens_per_second": 94.66027315405073
+        },
+        {
+          "ttft_seconds": 0.17878281400021478,
+          "wall_seconds": 0.5188299070000539,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 224.77845273752055,
+          "output_tokens_per_second": 94.12124581233988
+        }
+      ],
+      "aios_vm": [
+        {
+          "ttft_seconds": 0.1898399320000408,
+          "wall_seconds": 0.5205538919999526,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 216.80216802168022,
+          "output_tokens_per_second": 95.86751109966028
+        },
+        {
+          "ttft_seconds": 0.18116292999980033,
+          "wall_seconds": 0.5216179579999789,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 223.682371033133,
+          "output_tokens_per_second": 93.85402765760878
+        },
+        {
+          "ttft_seconds": 0.18775025000013557,
+          "wall_seconds": 0.5249396820001948,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 218.22863814418366,
+          "output_tokens_per_second": 94.7743777469761
+        }
+      ]
+    },
+    "medians": {
+      "github_linux": {
+        "ttft_seconds": 0.1871928850000586,
+        "wall_seconds": 0.5246237400001519,
+        "prompt_tokens_per_second": 215.55440593205725,
+        "output_tokens_per_second": 94.33795392770175
+      },
+      "aios_vm": {
+        "ttft_seconds": 0.18775025000013557,
+        "wall_seconds": 0.5216179579999789,
+        "prompt_tokens_per_second": 218.22863814418366,
+        "output_tokens_per_second": 94.7743777469761
+      }
+    },
+    "guest_to_host_output_rate_ratio": 1.0046261743137743
+  },
+  "rss_kib_after_short_tests": {
+    "host_server": 342912,
+    "qemu_process_including_guest": 521292
+  },
+  "context_checks": {
+    "github_linux": {
+      "input_tokens": 2048,
+      "tokens_evaluated": 2048,
+      "truncated": false,
+      "wall_seconds": 19.176422731999992,
+      "passed": true
+    },
+    "aios_vm": {
+      "input_tokens": 2048,
+      "tokens_evaluated": 2048,
+      "truncated": false,
+      "wall_seconds": 19.269200258000183,
+      "passed": true
+    }
+  },
+  "limitations": "Same runner, model and executable; host native versus a QEMU VM. KVM still includes virtualization and guest RAM differences. TCG is emulated and is not a fair OS speed comparison. 8192 configured is not the same as 8192 validated."
+}

@@ -52,3 +52,7 @@ After warmup the test alternates three identical 32-token streaming completions 
 GitHub run `42208503255` booted the network-selected test copy and generated text. Both the AIOS KVM guest and native GitHub Linux processed an 8,000-token input without truncation under an 8,192-token, single-slot configuration. Short-generation medians were 17.77 versus 17.67 tokens/s respectively; the difference is too small and the VM-versus-host comparison too confounded to demonstrate an OS speedup. See [technical.md](../technical.md) and `results/benchmarks/42208503255.json` for the setup, latency, memory caveats and raw samples. Reaching the model's configured limit is not established by the 8,000-token test.
 
 The boot-tested ISO's SHA-256 is `f86a7ec1f3865742a9ffeae20a38c4acf0be0c564b4659b16582d38f6d37dddd`. Its exact split files are preserved at Git commit `6c53ca7c490d39041aff3ecab65ca8f1d3ad2c2e`; a later workflow result can update the branch's `results/iso` directory.
+
+## Adaptive CPU image
+
+The adaptive image was boot- and inference-tested in GitHub run `42223692593`. Its SHA-256 is `f0c936e97a8ecf368c6fb7b2539757884314fdf1f7b1af0e843162a5ecc3b572`; the exact split files are preserved at commit `b63178b`. AVX2-capable CPUs select the optimized server; other x86-64 CPUs use the fallback. Startup reports the selected backend and a physical-core-based thread recommendation. See [technical.md](../technical.md) for CPU features, measured performance and limitations. Automatic tuning from RAM or cache capacity is not yet implemented.
