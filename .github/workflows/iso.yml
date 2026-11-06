@@ -49,7 +49,7 @@ jobs:
           SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          mkdir -p results/iso
+          mkdir -p results/iso "results/iso-runs/$RUN_ID"
           {
             echo "# ISO build result"
             echo ""
@@ -71,10 +71,11 @@ jobs:
             echo ""
             echo "## QEMU smoke test"
             test ! -f output/smoke.log || cat output/smoke.log
-          } > results/iso/report.txt
+          } > "results/iso-runs/$RUN_ID/report.txt"
           # Only replace the last tested ISO when all checks, including the
           # opt-in tuning boot, have passed.
           if [ "$BUILD_OUTCOME" = success ]; then
+            cp "results/iso-runs/$RUN_ID/report.txt" results/iso/report.txt
             rm -f results/iso/aios.iso.part-* results/iso/aios.iso.sha256
             split -b 45M -d -a 2 output/iso/aios.iso results/iso/aios.iso.part-
             (cd output/iso && sha256sum aios.iso) > results/iso/aios.iso.sha256
@@ -92,15 +93,13 @@ jobs:
             echo "Skipping stale ISO result from $SOURCE_SHA; newer source $published_source is published"
             exit 0
           fi
-          if [ "$BUILD_OUTCOME" != success ]; then
-            # Keep the last boot-tested image when a later build/test fails.
-            while IFS= read -r path; do
-              git restore --source=origin/arena/bce98461-aios --worktree -- "$path"
-            done < <(git ls-tree -r --name-only origin/arena/bce98461-aios results/iso | grep -E 'aios\.iso\.(part-[0-9]+|sha256)$' || true)
-          fi
           git reset --mixed origin/arena/bce98461-aios
           git restore --worktree . ':(exclude)results/iso'
-          git add -A results/iso
+          if [ "$BUILD_OUTCOME" != success ]; then
+            # A failed run must not replace the image or its success report.
+            git restore --worktree results/iso
+          fi
+          git add -A results/iso "results/iso-runs/$RUN_ID"
           if ! git diff --cached --quiet; then
             git commit -m "Record ISO build result for $SOURCE_SHA"
             for attempt in 1 2 3 4; do
