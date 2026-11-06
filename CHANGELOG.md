@@ -16,3 +16,4 @@
 - Boot-test the adaptive AVX2 ISO with model inference and a 2,048-token context; add a separate feature-masked portable/AVX2 guest comparison.
 - Verify both portable and AVX2 inference paths in feature-masked KVM guests and record the same-runner comparison.
 - Add opt-in, bounded model-specific thread calibration with a conservative fallback and a separate tuned-boot smoke test.
+- Benchmark `-O2` versus `-O3` and apply `-O3` only to the AVX2 inference engine; ISO-level validation pending.

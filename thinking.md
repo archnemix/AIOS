@@ -77,3 +77,7 @@ Choosing physical cores is only a heuristic. To improve on it without assuming t
 Separately, two GitHub runners are sweeping thread count, batch and microbatch sizes, flash attention, llamafile kernels and AVX512 where supported, holding the model and engine revision fixed. None of those settings is enabled based on an unmeasured guess.
 
 The initial calibration ISO job stalled during runner dependency setup, before the build. We applied the same bounded, no-recommends package installation that succeeded in the earlier fallback test and added a compact dependency log to the report. A replacement build was started; the original job may still run independently.
+
+## Compiler optimization level
+
+We found Buildroot defaults to `-O2` while the earlier native benchmark used CMake's Release `-O3`. Rather than infer the effect from results on different runners, run 42234637751 compared the flags on one EPYC 9V45 with the same AVX2 engine and model. `-O3` improved 2,048-token prefill from 184.35 to 258.46 tokens/s, and 256-token prefill from 349.76 to 405.22 tokens/s; short generation improved from 107.90 to 115.48 tokens/s, though the O2 generation samples were noisy. The order was fixed, and this was a native benchmark. We therefore changed only the AVX2 inference build to append `-O3`, retaining all other target flags and leaving the rest of the OS at the existing settings. It remains subject to image-level validation and a same-runner old-versus-new ISO comparison.
