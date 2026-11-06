@@ -1,0 +1,54 @@
+name: CPU compiler optimization comparison
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-compiler-tuning.txt]
+permissions:
+  contents: write
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare compiler levels
+        id: bench
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output/compiler output/llama
+          curl -fsSL --retry 3 https://codeload.github.com/ggml-org/llama.cpp/tar.gz/74d4f5b041ad837153b0e90fc864b8290e01d8d5 -o output/llama.tar.gz
+          echo '8dd9fcc7c17f972673960ffdcc7521f52de5a9ec594aa6acebd9dfd8c17c0a5c  output/llama.tar.gz' | sha256sum -c -
+          tar xzf output/llama.tar.gz -C output/llama --strip-components=1
+          ./scripts/download-model.sh "$PWD/output/model.gguf" > output/compiler/download.log 2>&1
+          ./scripts/tuning/optlevel.sh "$PWD/output/llama" "$PWD/output/compiler" > output/compiler/build.log 2>&1
+          python3 scripts/tuning/measure_optlevel.py "$PWD/output/compiler" "$PWD/output/model.gguf" "$PWD/output/compiler" > output/compiler/summary.log 2>&1
+      - name: Save results in repository
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ steps.bench.outcome }}
+          SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          dest="results/compiler/$RUN_ID"
+          mkdir -p "$dest"
+          printf 'source=%s outcome=%s\n' "$SOURCE" "$OUTCOME" > "$dest/status.txt"
+          if [ -f output/compiler/results.json ]; then cp output/compiler/results.json "$dest/results.json"; fi
+          for f in output/compiler/*.log; do
+            if [ -f "$f" ]; then tail -n 60 "$f" > "$dest/$(basename "$f")"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          git add "$dest"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record compiler comparison $RUN_ID"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:arena/bce98461-aios; then exit 0; fi
+              git pull --rebase origin arena/bce98461-aios
+            done
+            exit 1
+          fi

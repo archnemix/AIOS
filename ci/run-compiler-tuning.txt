@@ -1,0 +1,1 @@
+Compare O2 and O3 for AVX2 inference
