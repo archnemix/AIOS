@@ -1,0 +1,1 @@
+FAIL: PermissionError: [Errno 13] Permission denied: '/tmp/tmp9q762oyz/tree/boot/grub/grub.cfg'
