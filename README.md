@@ -1,6 +1,6 @@
 # AIOS
 
-AIOS is an early CPU-only inference appliance. Its first OS target is a minimal x86-64 Linux image built with Buildroot and a native C/C++ llama.cpp server. It has no desktop and disables the server's web UI. A Linux filesystem is still necessary, and AIOS is not a new kernel. The image build is **experimental and has not yet been boot-tested**.
+AIOS is an early CPU-only inference appliance. Its first OS target is a minimal x86-64 Linux image built with Buildroot and a native C/C++ llama.cpp server. It has no desktop and disables the server's web UI. A Linux filesystem is still necessary, and AIOS is not a new kernel. The image is **experimental**; its BIOS ISO has been boot- and inference-tested in QEMU/KVM, not on physical hardware.
 
 ## Build and try the OS
 
@@ -24,8 +24,8 @@ Run repository tests with `python3 -m unittest discover -s tests -v`. See [techn
 
 ## Model-integrated ISO
 
-An experimental BIOS ISO build embeds the 135M-parameter SmolLM2 model and boots the server without a separate model disk. See [docs/iso.md](docs/iso.md) for building, security, and the GitHub Actions QEMU test. A completed, tested ISO is not yet guaranteed; consult the CI result report once the workflow has run.
+An experimental BIOS ISO build embeds the 135M-parameter SmolLM2 model and boots the server without a separate model disk. See [docs/iso.md](docs/iso.md) for building, security, and the GitHub Actions QEMU test. The tested adaptive ISO and its checksum are documented in the image guide.
 
 ## Experimental CPU adaptation
 
-The image build now includes a portable server and an AVX2 server, selecting the latter only when the processor and Linux expose the required features. It also reports CPU topology, cache and available host memory and chooses a conservative starting thread count. A standalone same-machine kernel test showed a large improvement on one AMD runner; the newly integrated image still needs its own boot and inference validation. See [technical.md](technical.md) for results and limitations.
+The image build now includes a portable server and an AVX2 server, selecting the latter only when the processor and Linux expose the required features. It also reports CPU topology, cache and available host memory and chooses a conservative starting thread count. A standalone same-machine kernel test showed a large improvement on one AMD runner; the integrated image has also passed a QEMU/KVM boot and inference test. See [technical.md](technical.md) for results and limitations.
