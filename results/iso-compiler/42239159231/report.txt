@@ -1,0 +1,84 @@
+{
+  "cpu": "AMD EPYC 7763 64-Core Processor",
+  "kernel": "7.0.0-1017-azure",
+  "acceleration": "KVM",
+  "cpu_affinity": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "guest_ram_mib": 1024,
+  "results": {
+    "samples": {
+      "O2": [
+        {
+          "ttft_seconds": 0.19069365500000401,
+          "wall_seconds": 0.5407517100000092,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 212.4890435336928,
+          "output_tokens_per_second": 91.41185611773847
+        },
+        {
+          "ttft_seconds": 0.18948662799999738,
+          "wall_seconds": 0.5300271039999984,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 213.61701673155284,
+          "output_tokens_per_second": 93.98551448258037
+        },
+        {
+          "ttft_seconds": 0.1852590259999971,
+          "wall_seconds": 0.5347505569999953,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 219.37401624464593,
+          "output_tokens_per_second": 91.27627045158934
+        }
+      ],
+      "O3": [
+        {
+          "ttft_seconds": 0.168306618999992,
+          "wall_seconds": 0.486602757,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 241.30109550697358,
+          "output_tokens_per_second": 100.50251256281408
+        },
+        {
+          "ttft_seconds": 0.16213762000000997,
+          "wall_seconds": 0.47970334600000797,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 249.5944090852365,
+          "output_tokens_per_second": 100.71761299257207
+        },
+        {
+          "ttft_seconds": 0.16898095599999863,
+          "wall_seconds": 0.49492348899998717,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 239.71473946004252,
+          "output_tokens_per_second": 98.23695367206663
+        }
+      ]
+    },
+    "medians": {
+      "O2": {
+        "ttft_seconds": 0.18948662799999738,
+        "wall_seconds": 0.5347505569999953,
+        "prompt_tokens_per_second": 213.61701673155284,
+        "output_tokens_per_second": 91.41185611773847
+      },
+      "O3": {
+        "ttft_seconds": 0.168306618999992,
+        "wall_seconds": 0.486602757,
+        "prompt_tokens_per_second": 241.30109550697358,
+        "output_tokens_per_second": 100.50251256281408
+      }
+    },
+    "output_tokens_per_second_ratio": 1.0994472361809047,
+    "prompt_tokens_per_second_ratio": 1.1295967858694078
+  },
+  "limitations": "Same runner and CPU features; image builds also differ in the optional thread-tuner packaging. Both guests are forced to two threads. Fixed boot order; not an OS-only comparison."
+}
