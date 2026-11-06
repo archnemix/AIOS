@@ -51,6 +51,14 @@ def start_guest(iso, serial, cpus, port, cpu, expected):
             time.sleep(2)
         raise RuntimeError(f"{expected} guest not ready in 300 seconds")
     except Exception:
+        text = serial.read_text(errors="replace") if serial.exists() else ""
+        print(f"DIAGNOSTIC: backend_present={bool(re.search(r'AIOS: inference backend=', text))}, token_present={'AIOS_BOOT_TOKEN=' in text}", flush=True)
+        for line in text.splitlines()[-300:]:
+            low = line.lower()
+            if any(word in low for word in ('token', 'api_key', 'authorization', 'prompt', 'content', 'request')):
+                continue
+            if line.startswith('AIOS:') or any(word in low for word in ('error', 'failed', 'fatal', 'panic', 'eth0', 'udhcpc')):
+                print('DIAGNOSTIC: ' + line[:400], flush=True)
         stop(process)
         raise
 

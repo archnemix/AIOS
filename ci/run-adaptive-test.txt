@@ -1,1 +1,1 @@
-Compare portable and AVX2 paths; minimal QEMU dependencies
+Compare portable and AVX2 paths; diagnose masked guest startup
