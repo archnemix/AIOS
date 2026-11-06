@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: aios-iso-${{ github.sha }}
+  group: aios-iso-publish
   cancel-in-progress: false
 
 jobs:
@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install build and test dependencies
         run: |
           mkdir -p output
@@ -82,6 +84,14 @@ jobs:
           # Preserve newer code changes or a previous run's report; only publish
           # files in results/iso on top of the current remote branch tip.
           git fetch origin arena/bce98461-aios
+          # A slower, older build must never replace a newer image/report. The
+          # workflow is serialized, and the ancestry check also covers runs
+          # started before serialization was introduced.
+          published_source=$(git show origin/arena/bce98461-aios:results/iso/report.txt 2>/dev/null | sed -n 's/^Source commit: //p' | head -n 1)
+          if [ -n "$published_source" ] && [ "$published_source" != "$SOURCE_SHA" ] && git merge-base --is-ancestor "$SOURCE_SHA" "$published_source"; then
+            echo "Skipping stale ISO result from $SOURCE_SHA; newer source $published_source is published"
+            exit 0
+          fi
           if [ "$BUILD_OUTCOME" != success ]; then
             # Keep the last boot-tested image when a later build/test fails.
             while IFS= read -r path; do
