@@ -1,0 +1,86 @@
+{
+  "cpu": "AMD EPYC 7763 64-Core Processor",
+  "kernel": "7.0.0-1017-azure",
+  "acceleration": "KVM",
+  "cpu_affinity": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "guest_ram_mib": 1024,
+  "baseline_cpu": "host,-avx,-avx2,-fma,-f16c,-bmi2",
+  "optimized_cpu": "host",
+  "results": {
+    "samples": {
+      "portable": [
+        {
+          "ttft_seconds": 3.099006285999991,
+          "wall_seconds": 5.867070619000003,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 12.91851966683138,
+          "output_tokens_per_second": 11.560296882874324
+        },
+        {
+          "ttft_seconds": 3.0957272079999996,
+          "wall_seconds": 5.867581728999994,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 12.9308770270362,
+          "output_tokens_per_second": 11.5447153884923
+        },
+        {
+          "ttft_seconds": 3.0942489560000013,
+          "wall_seconds": 5.858926651999994,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 12.934355880394717,
+          "output_tokens_per_second": 11.575225400385238
+        }
+      ],
+      "avx2": [
+        {
+          "ttft_seconds": 0.19133259699999883,
+          "wall_seconds": 0.5346279119999906,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 211.3718030014796,
+          "output_tokens_per_second": 93.2262396904889
+        },
+        {
+          "ttft_seconds": 0.1840229369999946,
+          "wall_seconds": 0.5226082439999971,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 219.38484489491464,
+          "output_tokens_per_second": 94.46522351357494
+        },
+        {
+          "ttft_seconds": 0.18781265699999494,
+          "wall_seconds": 0.5245137419999963,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 216.12976431049202,
+          "output_tokens_per_second": 95.0513871561813
+        }
+      ]
+    },
+    "medians": {
+      "portable": {
+        "ttft_seconds": 3.0957272079999996,
+        "wall_seconds": 5.867070619000003,
+        "prompt_tokens_per_second": 12.9308770270362,
+        "output_tokens_per_second": 11.560296882874324
+      },
+      "avx2": {
+        "ttft_seconds": 0.18781265699999494,
+        "wall_seconds": 0.5245137419999963,
+        "prompt_tokens_per_second": 216.12976431049202,
+        "output_tokens_per_second": 94.46522351357494
+      }
+    },
+    "generation_speedup": 8.171522277556537,
+    "prompt_speedup": 16.714238628872778
+  },
+  "limitations": "Same host, two guests, CPU feature masks differ. This measures kernel dispatch, not an OS-only speedup."
+}
