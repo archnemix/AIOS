@@ -103,3 +103,5 @@ Run 42239159231 compared the prior O2 ISO with the O3 AVX2 ISO on the same AMD E
 ## Prompt microbatch option
 
 The two Intel sweeps showed better 2,048-token prefill for physical microbatch 128 than 512 at batch 512, while upstream's default microbatch is 512. We added explicit experimental local/network GRUB entries for microbatch 128 and a build-time `AIOS_UBATCH` setting, leaving upstream's default unchanged. The next ISO smoke test must boot the new entry and generate text. A same-ISO KVM comparison script was prepared for a 2,048-token prompt; the optimum may differ on other hardware and models, and the observed native microbenchmarks are not a substitute for testing the actual image.
+
+The first long-context attempt reached the prefix-cache check but failed it: our priming request mistakenly set `cache_prompt: false`, which makes the pinned server skip storing the prompt in its reusable cache. The test was corrected to prime with caching enabled and now records the 8,000-token result before running the separate cache measurement. This was a benchmark setup error, not evidence that prefix caching is unavailable; it needs a fresh run.

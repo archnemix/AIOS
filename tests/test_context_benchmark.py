@@ -9,12 +9,20 @@ from iso_benchmark.context import complete, shared_prefix
 class Client:
     def __init__(self, truncate=False, reuse=True):
         self.truncate, self.reuse = truncate, reuse
+        self.cached_prompt = []
 
     def request(self, path, payload, timeout=120):
         if path == '/tokenize':
             return {'tokens': [42, 17]}
         n = len(payload['prompt'])
-        processed = 16 if payload['cache_prompt'] and self.reuse else n
+        common = 0
+        if payload['cache_prompt'] and self.reuse:
+            for old, new in zip(self.cached_prompt, payload['prompt']):
+                if old != new:
+                    break
+                common += 1
+        self.cached_prompt = list(payload['prompt']) if payload['cache_prompt'] else []
+        processed = max(1, n - common)
         return {'tokens_evaluated': n, 'truncated': self.truncate, 'tokens_predicted': 1,
                 'timings': {'prompt_n': processed, 'prompt_ms': 1}}
 

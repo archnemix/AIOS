@@ -27,7 +27,7 @@ def shared_prefix(client, prefix_length=4096, suffix_length=16):
     prefix = [tokens[0]] * prefix_length
     target = prefix + [tokens[-1]] * suffix_length
     cold = complete(client, target, False)
-    complete(client, prefix, False)  # Restore the identical prefix in the slot.
+    complete(client, prefix, True)  # Populate the slot's reusable prefix.
     cached = complete(client, target, True)
     if cached['prompt_tokens_processed'] >= cold['prompt_tokens_processed']:
         raise RuntimeError('the server did not reuse the shared prompt prefix')

@@ -44,6 +44,7 @@ def main():
                 raise RuntimeError('tokenizer returned too few tokens')
             long_prompt = [tokens[0], tokens[-1]] * 4000
             long_result = complete(client, long_prompt, False)
+            print('8000-token check: ' + json.dumps(long_result), flush=True)
             cache_result = shared_prefix(client)
             print(json.dumps({'cpu': cpu, 'kernel': platform.release(), 'acceleration': 'KVM',
                               'cpu_affinity': cpus, 'threads': 2, 'guest_ram_mib': 1024,
