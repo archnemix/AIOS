@@ -20,6 +20,7 @@ start() {
                 case "$arg" in
                     aios.network=1) AIOS_LISTEN=0.0.0.0 ;;
                     aios.threads=2) AIOS_THREADS=2 ;;
+                    aios.autotune=1) AIOS_THREADS=autotune ;;
                 esac
             done
             ;;
@@ -38,9 +39,6 @@ start() {
         [ "$AIOS_MODEL_MODE" = external ] && umount "$DATA"
         return 1
     fi
-    if [ "$AIOS_THREADS" = auto ]; then
-        AIOS_THREADS=$(/usr/bin/aios-hardware --threads) || return 1
-    fi
     /usr/bin/aios-hardware --report
     VARIANT=$(/usr/libexec/aios-select-backend)
     BACKEND=/usr/bin/llama-server
@@ -48,6 +46,18 @@ start() {
         BACKEND=/usr/bin/llama-server-avx2
     else
         VARIANT=portable
+    fi
+    if [ "$AIOS_THREADS" = autotune ]; then
+        echo "AIOS: measuring generation thread counts (up to 180 seconds)"
+        if tuned=$(/usr/libexec/aios-tune-threads "$MODEL" "$VARIANT"); then
+            AIOS_THREADS=$tuned
+            echo "AIOS: tuning selected $AIOS_THREADS threads"
+        else
+            AIOS_THREADS=auto
+        fi
+    fi
+    if [ "$AIOS_THREADS" = auto ]; then
+        AIOS_THREADS=$(/usr/bin/aios-hardware --threads) || return 1
     fi
     echo "AIOS: inference backend=$VARIANT threads=$AIOS_THREADS"
     if ! start-stop-daemon -S -b -m -p "$PIDFILE" -c aios \

@@ -15,6 +15,7 @@ from pathlib import Path
 
 from iso_benchmark.client import Client
 from iso_benchmark.measure import check_context, run_comparison
+from iso_benchmark.tuning_smoke import test_tuning_boot
 
 
 def wait_for_health(client, process, seconds):
@@ -192,6 +193,14 @@ def main():
             print(json.dumps(result, indent=2), flush=True)
             if not all(item["passed"] for item in result["context_checks"].values()):
                 raise RuntimeError("2,048-token context check failed or timed out")
+            # Stop the comparison guests before calibrating so they cannot
+            # consume CPU or bias the tuning measurement.
+            stop(baseline)
+            baseline = None
+            stop(vm)
+            vm = None
+            tuned = test_tuning_boot(output, temp, affinity, accel)
+            print("Tuning boot: " + json.dumps(tuned), flush=True)
         except Exception:
             print_boot_diagnostics(serial)
             raise

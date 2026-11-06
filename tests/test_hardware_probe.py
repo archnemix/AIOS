@@ -23,6 +23,9 @@ class HardwareProbeTests(unittest.TestCase):
         threads = int(subprocess.check_output([str(self.binary), "--threads"], text=True))
         self.assertGreaterEqual(threads, 1)
         self.assertLessEqual(threads, len(os.sched_getaffinity(0)))
+        logical = int(subprocess.check_output([str(self.binary), "--logical"], text=True))
+        self.assertGreaterEqual(logical, threads)
+        self.assertLessEqual(logical, len(os.sched_getaffinity(0)))
 
     def test_report_and_invalid_arguments(self):
         report = subprocess.check_output([str(self.binary), "--report"], text=True)

@@ -1,1 +1,1 @@
-ISO build trigger: adaptive CPU backends and hardware probe
+ISO build trigger: optional model-specific thread calibration

@@ -58,3 +58,7 @@ The boot-tested ISO's SHA-256 is `f86a7ec1f3865742a9ffeae20a38c4acf0be0c564b4659
 The adaptive image was boot- and inference-tested in GitHub run `42223692593`. Its SHA-256 is `f0c936e97a8ecf368c6fb7b2539757884314fdf1f7b1af0e843162a5ecc3b572`; the exact split files are preserved at commit `b63178b`. AVX2-capable CPUs select the optimized server; other x86-64 CPUs use the fallback. Startup reports the selected backend and a physical-core-based thread recommendation. See [technical.md](../technical.md) for CPU features, measured performance and limitations. Automatic tuning from RAM or cache capacity is not yet implemented.
 
 The same adaptive ISO also passed a feature-masked fallback test in run `42229907573`: both portable and AVX2 guests booted and generated text. On that AMD runner, median output speed was 11.56 versus 94.47 tokens/s respectively. This is an instruction-set comparison on one machine, not an OS-only speedup; see [technical.md](../technical.md) for the methodology and caveats.
+
+## Optional thread calibration
+
+The experimental tuned boot menu entries measure several thread counts for short model generation before starting the server. This adds up to 180 seconds of startup time; if tuning fails, AIOS falls back to the topology-based count. The test is limited to the installed model and a short generation workload and may not be optimal for long prompts. The default entries remain unchanged. This option requires an ISO built after the change; check the CI report for the tuned-boot result before relying on it.

@@ -65,9 +65,9 @@ jobs:
             echo "## QEMU smoke test"
             test ! -f output/smoke.log || cat output/smoke.log
           } > results/iso/report.txt
-          # A successful boot and inference can yield an ISO even if the later
-          # performance or context checks failed; the report records the failure.
-          if [ -f output/smoke.log ] && grep -q '^PASS: ISO test copy booted;' output/smoke.log; then
+          # Only replace the last tested ISO when all checks, including the
+          # opt-in tuning boot, have passed.
+          if [ "$BUILD_OUTCOME" = success ]; then
             rm -f results/iso/aios.iso.part-* results/iso/aios.iso.sha256
             split -b 45M -d -a 2 output/iso/aios.iso results/iso/aios.iso.part-
             (cd output/iso && sha256sum aios.iso) > results/iso/aios.iso.sha256
@@ -77,7 +77,7 @@ jobs:
           # Preserve newer code changes or a previous run's report; only publish
           # files in results/iso on top of the current remote branch tip.
           git fetch origin arena/bce98461-aios
-          if ! grep -q '^PASS: ISO test copy booted;' output/smoke.log 2>/dev/null; then
+          if [ "$BUILD_OUTCOME" != success ]; then
             # Keep the last boot-tested image when a later build/test fails.
             while IFS= read -r path; do
               git restore --source=origin/arena/bce98461-aios --worktree -- "$path"

@@ -1,0 +1,30 @@
+#!/bin/sh
+# Opt-in one-time, boot-local decode benchmark. Stdout is the chosen thread count.
+set -eu
+if [ "$#" -ne 2 ]; then echo 'usage: aios-tune-threads MODEL portable|avx2' >&2; exit 2; fi
+model=$1
+case "$2" in
+    portable) bench=/usr/bin/llama-bench ;;
+    avx2) bench=/usr/bin/llama-bench-avx2 ;;
+    *) exit 2 ;;
+esac
+physical=$(/usr/bin/aios-hardware --threads)
+logical=$(/usr/bin/aios-hardware --logical)
+case "$physical:$logical" in *[!0-9:]*|:*|*:) exit 1 ;; esac
+[ "$physical" -gt 0 ] && [ "$logical" -ge "$physical" ] || exit 1
+if [ "$logical" -eq 1 ]; then echo 1; exit 0; fi
+candidates=1
+half=$((physical / 2))
+for count in "$half" "$physical" "$logical"; do
+    [ "$count" -gt 1 ] || continue
+    case ",$candidates," in *",$count,"*) ;; *) candidates="$candidates,$count" ;; esac
+done
+work=$(mktemp -d /tmp/aios-tune.XXXXXX)
+trap 'rm -rf "$work"' EXIT HUP INT TERM
+# The output file is opened by root; the model is loaded by unprivileged aios.
+if ! timeout 180 start-stop-daemon -S -c aios -x "$bench" -- \
+    -m "$model" -p 0 -n 32 -t "$candidates" -r 2 -ngl 0 -o jsonl > "$work/results" 2> "$work/error"; then
+    echo 'AIOS: tuning failed or timed out; using topology default' >&2
+    exit 1
+fi
+/usr/libexec/aios-pick-threads "$work/results" "$candidates"

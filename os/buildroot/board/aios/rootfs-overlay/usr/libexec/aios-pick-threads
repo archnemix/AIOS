@@ -1,0 +1,27 @@
+#!/bin/sh
+# Read the pinned llama-bench JSONL format. Only accept reported candidates.
+[ "$#" -eq 2 ] || exit 2
+awk -v candidates=",$2," '
+    function number(key, pattern, value) {
+        pattern = "\\\"" key "\\\"[[:space:]]*:[[:space:]]*[0-9]+([.][0-9]+)?"
+        if (!match($0, pattern)) return -1
+        value = substr($0, RSTART, RLENGTH)
+        sub(/.*:[[:space:]]*/, "", value)
+        return value + 0
+    }
+    {
+        threads = number("n_threads")
+        generated = number("n_gen")
+        prompt = number("n_prompt")
+        rate = number("avg_ts")
+        if (threads < 1 || generated != 32 || prompt != 0 || rate <= 0) next
+        if (index(candidates, "," threads ",") == 0) next
+        # Require a small win before increasing resource use.
+        if (!found || rate > best_rate * 1.02) {
+            best = threads
+            best_rate = rate
+            found = 1
+        }
+    }
+    END { if (!found) exit 1; print best }
+' "$1"

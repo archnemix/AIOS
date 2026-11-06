@@ -90,8 +90,8 @@ static void print_cache(int cpu)
 
 int main(int argc, char **argv)
 {
-    if (argc != 2 || (strcmp(argv[1], "--threads") && strcmp(argv[1], "--report"))) {
-        fprintf(stderr, "usage: aios-hardware --threads|--report\n");
+    if (argc != 2 || (strcmp(argv[1], "--threads") && strcmp(argv[1], "--logical") && strcmp(argv[1], "--report"))) {
+        fprintf(stderr, "usage: aios-hardware --threads|--logical|--report\n");
         return 2;
     }
     int logical, first_cpu;
@@ -100,6 +100,10 @@ int main(int argc, char **argv)
     int threads = quota > 0 && quota < cores ? quota : cores;
     if (!strcmp(argv[1], "--threads")) {
         printf("%d\n", threads);
+        return 0;
+    }
+    if (!strcmp(argv[1], "--logical")) {
+        printf("%d\n", quota > 0 && quota < logical ? quota : logical);
         return 0;
     }
     printf("Logical CPUs in affinity: %d\nDetected physical cores: %d\n", logical, cores);

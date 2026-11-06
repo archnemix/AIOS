@@ -18,7 +18,7 @@ LLAMA_CPP_CONF_OPTS = \
 	-DLLAMA_BUILD_SERVER=ON \
 	-DLLAMA_CURL=OFF \
 	-DLLAMA_SERVER_SSL=OFF
-LLAMA_CPP_BUILD_OPTS = --target llama-server
+LLAMA_CPP_BUILD_OPTS = --target llama-server llama-bench
 
 # Upstream b5046 unconditionally enables SSE4.2 for non-native GCC builds.
 # Remove that assumption so the fallback works on baseline x86-64 CPUs.
@@ -38,13 +38,15 @@ endef
 LLAMA_CPP_POST_CONFIGURE_HOOKS += LLAMA_CPP_CONFIGURE_AVX2
 
 define LLAMA_CPP_BUILD_AVX2
-	$(TARGET_MAKE_ENV) $(BR2_CMAKE) --build $(@D)/buildroot-avx2 -j$(PARALLEL_JOBS) --target llama-server
+	$(TARGET_MAKE_ENV) $(BR2_CMAKE) --build $(@D)/buildroot-avx2 -j$(PARALLEL_JOBS) --target llama-server llama-bench
 endef
 LLAMA_CPP_POST_BUILD_HOOKS += LLAMA_CPP_BUILD_AVX2
 
 define LLAMA_CPP_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/buildroot-build/bin/llama-server $(TARGET_DIR)/usr/bin/llama-server
 	$(INSTALL) -D -m 0755 $(@D)/buildroot-avx2/bin/llama-server $(TARGET_DIR)/usr/bin/llama-server-avx2
+	$(INSTALL) -D -m 0755 $(@D)/buildroot-build/bin/llama-bench $(TARGET_DIR)/usr/bin/llama-bench
+	$(INSTALL) -D -m 0755 $(@D)/buildroot-avx2/bin/llama-bench $(TARGET_DIR)/usr/bin/llama-bench-avx2
 endef
 
 $(eval $(cmake-package))
