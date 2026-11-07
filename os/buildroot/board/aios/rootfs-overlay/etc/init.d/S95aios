@@ -9,7 +9,9 @@ start() {
     for arg in $(cat /proc/cmdline); do
         case "$arg" in
             aios.network=1) AIOS_LISTEN=0.0.0.0 ;;
-            aios.threads=2) AIOS_THREADS=2 ;;
+            aios.threads=1|aios.threads=2|aios.threads=4|aios.threads=8) AIOS_THREADS=${arg#*=} ;;
+            aios.batch-threads=1|aios.batch-threads=2|aios.batch-threads=4|aios.batch-threads=8) AIOS_BATCH_THREADS=${arg#*=} ;;
+            aios.poll=0|aios.poll=50|aios.poll=100) AIOS_POLL=${arg#*=} ;;
             aios.autotune=1) AIOS_THREADS=autotune ;;
             aios.ubatch=128) AIOS_UBATCH=128 ;;
             aios.ubatch=auto) AIOS_UBATCH=auto ;;
@@ -70,6 +72,19 @@ start() {
     # Reject oversized requests by default rather than silently dropping input.
     # Context shift remains an explicit trusted-configuration choice.
     set -- --threads "$AIOS_THREADS" --ctx-size "$AIOS_CONTEXT" --no-webui
+    # Optional independently controlled prefill workers and generation polling.
+    # Restrict boot/config values rather than passing arbitrary shell input.
+    case "${AIOS_BATCH_THREADS:-auto}" in
+        auto) ;;
+        1|2|4|8) set -- "$@" --threads-batch "$AIOS_BATCH_THREADS" ;;
+        *) echo "AIOS: invalid batch thread count" >&2; return 1 ;;
+    esac
+    case "${AIOS_POLL:-auto}" in
+        auto) ;;
+        0|50|100) set -- "$@" --poll "$AIOS_POLL" ;;
+        *) echo "AIOS: invalid polling level" >&2; return 1 ;;
+    esac
+    echo "AIOS: batch threads=${AIOS_BATCH_THREADS:-auto} generation poll=${AIOS_POLL:-auto}"
     case "${AIOS_ROPE_MODE:-model}" in
         model) ;;
         linear2)

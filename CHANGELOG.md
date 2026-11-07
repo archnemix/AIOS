@@ -42,3 +42,4 @@
 - Completed GitHub Actions native setting screening on two AMD runners: 128-token batching improved synthetic 2,048-token prefill by 8.2–10.7% over 512; booted-server and output-speed results remain separate.
 - ISO run `42363787726` booted and validated the scoped optimized default; same-image before/after performance test is running.
 - Same-ISO KVM comparison `42365054983` confirmed faster prompt ingestion with the scoped default but observed lower generation rates; retained `aios.ubatch=auto` as a rollback.
+- Qwen external-model guest test completed: 32,000 input tokens were evaluated and one 16k retrieval probe succeeded; see `technical.md` for the limitations and Linux/KVM comparison.

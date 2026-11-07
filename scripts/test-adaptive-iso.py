@@ -24,9 +24,9 @@ def stop(process):
         process.wait()
 
 
-def start_guest(iso, serial, cpus, port, cpu, expected, memory_mib=1024):
+def start_guest(iso, serial, cpus, port, cpu, expected, memory_mib=1024, vcpus=2):
     cmd = ["taskset", "-c", cpus, "qemu-system-x86_64", "-machine", "accel=kvm", "-cpu", cpu,
-           "-m", str(memory_mib), "-smp", "2", "-display", "none", "-monitor", "none", "-no-reboot",
+           "-m", str(memory_mib), "-smp", str(vcpus), "-display", "none", "-monitor", "none", "-no-reboot",
            "-serial", f"file:{serial}", "-cdrom", str(iso), "-boot", "d", "-netdev",
            f"user,id=n0,hostfwd=tcp:127.0.0.1:{port}-:8080",
            "-device", "virtio-net-pci,netdev=n0", "-device", "virtio-rng-pci"]

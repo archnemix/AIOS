@@ -1,1 +1,1 @@
-Build ISO with scoped two-thread AVX2 prompt batching default.
+Build ISO with generation-specific tuning controls.

@@ -17,6 +17,7 @@ from iso_benchmark.client import Client
 from iso_benchmark.measure import check_context, run_comparison
 from iso_benchmark.tuning_smoke import test_tuning_boot, test_ubatch_boot, test_extended_boot, test_combined_boot
 from iso_benchmark.external_smoke import test_external_boot
+from iso_benchmark.generation_smoke import test_generation_controls
 
 
 def wait_for_health(client, process, seconds):
@@ -228,6 +229,8 @@ def main():
             print("Experimental 16k boot: " + json.dumps(extended), flush=True)
             external = test_external_boot(output, temp, affinity, accel)
             print("External-model boot: " + json.dumps(external), flush=True)
+            generation = test_generation_controls(output, temp, affinity, accel)
+            print("Generation controls boot: " + json.dumps(generation), flush=True)
             combined = test_combined_boot(output, temp, affinity, accel)
             print("Combined tuning boot: " + json.dumps(combined), flush=True)
         except Exception:
