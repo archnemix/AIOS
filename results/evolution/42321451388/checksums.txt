@@ -1,0 +1,2 @@
+old.iso: OK
+new.iso: OK
