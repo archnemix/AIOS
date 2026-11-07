@@ -31,3 +31,4 @@
 - Boot-tested the opt-in 16k profile with a 9,000-token input; recorded before/after throughput at 256, 2,048, and 8,000 input tokens.
 - Measured guest THP policy and prompt microbatch separately and together; the THP effect remains inconclusive.
 - Measured thread tuning and microbatch individually and together; the tuner selected two threads in that test.
+- Compared the 16k profile with the same binary on ordinary Linux at five input lengths; recorded the failed synthetic retrieval probe and its limitations.

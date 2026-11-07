@@ -79,6 +79,8 @@ The microbatch-profile image passed boot, authentication, normal inference, over
 
 In same-image KVM run `42243833933` on one AMD EPYC 7763, the microbatch-128 entry improved median processing of a synthetic 2,048-token prompt by about 8.5% versus the normal entry (13.903 versus 12.816 seconds). This is not guaranteed for other CPUs, models or workloads; the normal entry remains the default.
 
-An upcoming experimental boot profile offers a 16,384-token configured context using linear RoPE scaling. The embedded model was trained for 8,192 tokens, so capacity beyond that does **not** imply reliable answers. It also needs more memory and is not the default. Pending the new build, neither the profile nor its long-input smoke test has been validated.
+The experimental 16k boot profile offers a 16,384-token configured context using linear RoPE scaling. The embedded model was trained for 8,192 tokens, so capacity beyond that does **not** imply reliable answers. It also needs more memory and is not the default. Its boot and long-input acceptance tests are described below; they do not establish reliable retrieval quality.
 
 The experimental 16k-profile image booted and processed 9,000 input tokens untruncated in run `42321205469` with 2 GiB guest RAM. Its exact parts are preserved at commit `0169623`; SHA-256: `3c5a6a280c9e05ab5cd486b9eba16af39ce462b0e5b8a55d0869906c4914f444`. Input acceptance is not a quality guarantee beyond the original training length; longer and retrieval tests are separate.
+
+A follow-up comparison in run `42323397851` processed **16,000 input tokens plus 32 output tokens** without truncation on both conventional Linux and the KVM guest using the 16k profile and 2 GiB guest RAM. A simple synthetic retrieval probe failed at both 256 and 12,000 tokens, so this is a capacity result, **not proof of reliable 16k understanding**. See [technical.md](../technical.md) for the Linux/guest throughput at five lengths and the limitations.

@@ -126,9 +126,9 @@ Run `42243833933` compared the same ISO and model in two KVM guests on an EPYC 7
 
 ## OS-policy and experimental 16k investigation
 
-Linux's [THP documentation](https://docs.kernel.org/admin-guide/mm/transhuge.html) describes potential TLB benefits as well as memory/compaction costs. [CPUFreq](https://docs.kernel.org/admin-guide/pm/cpufreq.html) performance mode requests higher frequency rather than guaranteeing one, and a VM may have no access to host policy. We are enabling kernel THP support with a conservative madvise default for controlled guest-policy experiments; not all model mappings will use huge pages. We do not blindly change governors or NUMA placement. These kernel changes require a fresh ISO test.
+Linux's [THP documentation](https://docs.kernel.org/admin-guide/mm/transhuge.html) describes potential TLB benefits as well as memory/compaction costs. [CPUFreq](https://docs.kernel.org/admin-guide/pm/cpufreq.html) performance mode requests higher frequency rather than guaranteeing one, and a VM may have no access to host policy. We are enabling kernel THP support with a conservative madvise default for controlled guest-policy experiments; not all model mappings will use huge pages. We do not blindly change governors or NUMA placement. The experimental THP kernel build and policy checks passed in the ISO runs described below.
 
-An experimental 16,384-token boot entry sets linear RoPE scale 2 for the embedded 8,192-token-trained model. This is extrapolation, not additional training or a quality guarantee; usable capacity requires both input/output space, RAM, and quality testing. Its smoke test requests 9,000 input tokens without truncation. It is opt-in and unvalidated until the ISO workflow and separate longer-context tests complete. Upstream's [context-extension documentation](https://github.com/ggml-org/llama.cpp/blob/master/tools/completion/README.md) discusses scaling in the context of models fine-tuned for extended contexts.
+An experimental 16,384-token boot entry sets linear RoPE scale 2 for the embedded 8,192-token-trained model. This is extrapolation, not additional training or a quality guarantee; usable capacity requires both input/output space, RAM, and quality testing. Its smoke test processed 9,000 input tokens without truncation. It remains opt-in; further long-context and retrieval measurements are described below. Upstream's [context-extension documentation](https://github.com/ggml-org/llama.cpp/blob/master/tools/completion/README.md) discusses scaling in the context of models fine-tuned for extended contexts.
 
 Native factorial run `42321265614` found no meaningful large improvement from CPU pinning or process-level THP opt-out on one EPYC 7763. Host THP policy was `[madvise]`, and sampled process hugepage counters were all zero; this is **not** a benchmark of actual hugepage-backed allocations. Two-thread 2,048-token prefill was 296.85–297.40 tokens/s across all four combinations. Fixed ordering, one model, and the virtualized runner limit generalization. See `results/os-tuning/42321265614/results.json`.
 
@@ -139,3 +139,17 @@ The 16k experimental profile passed a 9,000-token untruncated KVM inference smok
 Run `42323397838` tested THP policy and microbatch as a 2×2 factorial on the same verified ISO in KVM on an EPYC 9V74. For a 2,048-token synthetic prompt, median processing rates were: THP never/default microbatch 177.45 tokens/s; THP always/default 179.22; never/128 191.57; always/128 192.04. Each median uses three alternating samples after warmup. The guest's selected kernel policy was verified, but actual hugepage backing was not measured, so the ~1% THP difference is inconclusive; the microbatch benefit is workload-specific. Both are compared at two threads on the same runner, not against another OS. Raw data: `results/os-image/42323397838/report.txt`.
 
 Run `42323792978` tested thread calibration and microbatch both separately and together in four same-image KVM guests on an EPYC 7763. The tuner selected the same two threads as the fixed baseline. Median 2,048-token prompt rates were 143.84 tokens/s baseline, 155.97 microbatch alone, 143.41 tuner alone, and 156.30 combined; corresponding generation rates were 49.33, 49.35, 49.05 and 50.48 tokens/s. Three samples, fixed boot order, single model/runner; small differences should not be overinterpreted. The tuner imposes a startup cost and remains optional. Raw results: `results/combination/42323792978/report.txt`.
+
+### 16k profile versus ordinary Linux
+
+Run `42323397851` compared a conventional GitHub Ubuntu Linux host with an AIOS KVM guest on the same EPYC 7763, using the exact Buildroot-built AVX2 binary, target libraries, embedded model, two pinned logical CPUs/threads, 16,384 context, linear RoPE scale 2, and microbatch 128. Guest RAM was 2 GiB. Each length has one sample; the synthetic input, virtualization, different memory configuration and host load prevent an OS-only conclusion.
+
+| Input tokens | Linux prompt tok/s | AIOS prompt tok/s | Linux generation tok/s | AIOS generation tok/s |
+| --- | ---: | ---: | ---: | ---: |
+| 256 | 245.22 | 241.83 | 92.60 | 94.31 |
+| 2,048 | 164.62 | 163.83 | 53.73 | 52.02 |
+| 8,000 | 78.07 | 77.63 | 22.91 | 21.79 |
+| 12,000 | 57.78 | 57.36 | 16.47 | 15.66 |
+| 16,000 | 45.88 | 45.54 | 13.07 | 12.34 |
+
+Both accepted and processed all indicated input tokens without truncation while generating 32 tokens. A single untemplated synthetic retrieval probe failed to return the expected word at both 256 and 12,000 input tokens. This demonstrates neither reliable retrieval at 16k nor that the long context caused the failure; the prompt, tiny model, quantization and scaling could all matter. Do not advertise the 16k mode as a reliable 16k understanding window. `results/16k-comparison/42323397851/report.txt` includes the measurements and synthetic answers. No Windows comparison or physical bare-metal comparison has been run.
