@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import platform
+import signal
 import statistics
 import sys
 import tempfile
@@ -71,9 +72,12 @@ def main():
                       'response_hashes': digests, 'identical_spot_responses': len(set(digests.values())) == 1,
                       'results': {}, 'limitations': 'Same ISO and vCPU allocation within each run; CPU thread '
                       'counts differ and can consume more CPU time. Fixed guest boot order, shared host, '
-                      'synthetic repeated-token inputs, 3 samples at 256/2048 and 2 at 8000. CPU seconds '
+                      'idle QEMU processes suspended during measurement, synthetic repeated-token inputs, 3 samples at 256/2048 and 2 at 8000. CPU seconds '
                       'are QEMU process user+system time for request, not energy. One response equality '
                       'check is not a quality evaluation. Not a bare-metal or OS-only comparison.'}
+            # Stop idle guests so aggressive polling cannot steal CPU from the measured guest.
+            for process in processes:
+                os.kill(process.pid, signal.SIGSTOP)
             for n in (256, 2048, 8000):
                 prompt = (tokens[:2] * ((n + 1) // 2))[:n]
                 samples = {name: [] for name, _, _ in modes}
@@ -82,9 +86,13 @@ def main():
                     orders += (list(range(1, len(modes))) + [0],)
                 for order in orders:
                     for i in order:
-                        before = cpu_seconds(processes[i])
-                        result = combination.bench.completion(clients[i], prompt, generated=64)
-                        result['qemu_cpu_seconds'] = cpu_seconds(processes[i]) - before
+                        os.kill(processes[i].pid, signal.SIGCONT)
+                        try:
+                            before = cpu_seconds(processes[i])
+                            result = combination.bench.completion(clients[i], prompt, generated=64)
+                            result['qemu_cpu_seconds'] = cpu_seconds(processes[i]) - before
+                        finally:
+                            os.kill(processes[i].pid, signal.SIGSTOP)
                         samples[modes[i][0]].append(result)
                         print('Measurement: ' + json.dumps({'profile': modes[i][0], **result}), flush=True)
                 fields = ('prompt_tokens_per_second', 'generation_tokens_per_second', 'wall_seconds', 'qemu_cpu_seconds')
@@ -95,6 +103,8 @@ def main():
             print('REPORT_JSON=' + json.dumps(report), flush=True)
         finally:
             for process in reversed(processes):
+                if process.poll() is None:
+                    os.kill(process.pid, signal.SIGCONT)
                 combination.adaptive.stop(process)
 
 
