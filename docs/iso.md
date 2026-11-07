@@ -94,3 +94,17 @@ As an optional alternative to the embedded model, the official Qwen2.5-0.5B-Inst
 To obtain the tested optional Qwen file, run `./scripts/download-long-model.sh /path/to/qwen.gguf` on a machine with Internet access. The script pins the official repository revision and verifies the 432,041,824-byte file against SHA-256 `590d2479d401db206fe12a4562294d2de6211e06338a6e34fbad64b32f1469d0`. Review the [model card and license](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF) before use. The download is separate from the ISO and can take substantial disk space. An external model volume must have enough room for the file; do not put the key in a public log or repository.
 
 A subsequent experimental combined profile enables the generation thread tuner and microbatch 128 together. Calibration can add up to 180 seconds to boot and is not guaranteed to improve performance; it falls back to the topology-based thread count. Both local-only and unencrypted network variants are provided. This menu addition requires a new build and boot test.
+
+The external-model profile booted, authenticated, and generated text in run `42358964708` with the embedded model copied onto a disposable ext4 disk. The server was configured for 32,768 tokens, but that smoke test did not test a long input or Qwen in the guest. The exact ISO parts are preserved at commit `51b8698`; SHA-256: `0adb6fbb71d8f61ebff278dd3910aa6e7e8d259b7781fcf9048d5ec0bcd393ad`.
+
+For example, on a Linux host with KVM, after creating a private `model-data.img` using the model-volume guide, boot the ISO and select **external model disk, network API, 32k context** in its serial menu:
+
+```sh
+qemu-system-x86_64 -machine accel=kvm -cpu host -m 3072 -smp 2 -nographic \
+  -cdrom AIOS.iso -boot d \
+  -drive file=model-data.img,format=raw,if=virtio,readonly=on \
+  -netdev user,id=n0,hostfwd=tcp:127.0.0.1:8080-:8080 \
+  -device virtio-net-pci,netdev=n0 -device virtio-rng-pci
+```
+
+This binds the host-forwarded port to loopback, but the guest network entry listens on all guest interfaces without TLS. Use it only on a trusted network with suitable access controls. Supply the disk's private key as `AIOS_API_TOKEN` for requests. RAM requirements vary with model, context and guest overhead; 3 GiB is a test configuration, not a guarantee for every model or system.
