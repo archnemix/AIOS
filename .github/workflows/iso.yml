@@ -26,7 +26,7 @@ jobs:
           mkdir -p output
           opts='-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::ForceIPv4=true -o DPkg::Lock::Timeout=30'
           timeout 120 sudo apt-get update $opts > output/apt.log 2>&1 || echo "Using cached package indexes" >> output/apt.log
-          timeout 600 sudo apt-get install $opts --no-install-recommends -y build-essential file wget cpio unzip rsync bc bison flex libncurses-dev libssl-dev xorriso grub-pc-bin grub-common mtools qemu-system-x86 >> output/apt.log 2>&1
+          timeout 600 sudo apt-get install $opts --no-install-recommends -y build-essential file wget cpio e2fsprogs unzip rsync bc bison flex libncurses-dev libssl-dev xorriso grub-pc-bin grub-common mtools qemu-system-x86 >> output/apt.log 2>&1
           if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
       - name: Build and test
         id: build

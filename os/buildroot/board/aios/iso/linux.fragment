@@ -7,3 +7,6 @@ CONFIG_HW_RANDOM_VIRTIO=y
 # Permit opt-in, measured transparent-huge-page policies; default is madvise.
 CONFIG_TRANSPARENT_HUGEPAGE=y
 CONFIG_TRANSPARENT_HUGEPAGE_MADVISE=y
+# Optional read-only external model volumes on virtio block devices.
+CONFIG_VIRTIO_BLK=y
+CONFIG_EXT4_FS=y

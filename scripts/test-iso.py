@@ -16,6 +16,7 @@ from pathlib import Path
 from iso_benchmark.client import Client
 from iso_benchmark.measure import check_context, run_comparison
 from iso_benchmark.tuning_smoke import test_tuning_boot, test_ubatch_boot, test_extended_boot
+from iso_benchmark.external_smoke import test_external_boot
 
 
 def wait_for_health(client, process, seconds):
@@ -216,6 +217,8 @@ def main():
             print("Microbatch boot: " + json.dumps(ubatch), flush=True)
             extended = test_extended_boot(output, temp, affinity, accel)
             print("Experimental 16k boot: " + json.dumps(extended), flush=True)
+            external = test_external_boot(output, temp, affinity, accel)
+            print("External-model boot: " + json.dumps(external), flush=True)
         except Exception:
             print_boot_diagnostics(serial)
             raise

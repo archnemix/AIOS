@@ -5,6 +5,18 @@ DATA=/data
 
 start() {
     . "$CONFIG"
+    # Boot profiles are trusted local configuration; network is always opt-in.
+    for arg in $(cat /proc/cmdline); do
+        case "$arg" in
+            aios.network=1) AIOS_LISTEN=0.0.0.0 ;;
+            aios.threads=2) AIOS_THREADS=2 ;;
+            aios.autotune=1) AIOS_THREADS=autotune ;;
+            aios.ubatch=128) AIOS_UBATCH=128 ;;
+            aios.context=16k) AIOS_CONTEXT=16384; AIOS_ROPE_MODE=linear2 ;;
+            aios.context=32k) AIOS_CONTEXT=32768; AIOS_ROPE_MODE=model ;;
+            aios.external=1) AIOS_MODEL_MODE=external; AIOS_DATA_DEVICE=/dev/vda ;;
+        esac
+    done
     case "$AIOS_MODEL_MODE" in
         embedded)
             MODEL=/opt/aios/model.gguf
@@ -15,16 +27,6 @@ start() {
                 echo "AIOS: failed to generate API key" >&2; return 1
             fi
             KEY=/run/aios/api.key
-            # The network-enabled GRUB entry is an explicit opt-in.
-            for arg in $(cat /proc/cmdline); do
-                case "$arg" in
-                    aios.network=1) AIOS_LISTEN=0.0.0.0 ;;
-                    aios.threads=2) AIOS_THREADS=2 ;;
-                    aios.autotune=1) AIOS_THREADS=autotune ;;
-                    aios.ubatch=128) AIOS_UBATCH=128 ;;
-                    aios.context=16k) AIOS_CONTEXT=16384; AIOS_ROPE_MODE=linear2 ;;
-                esac
-            done
             ;;
         external)
             mkdir -p "$DATA"
@@ -87,6 +89,7 @@ start() {
     esac
     echo "AIOS: inference backend=$VARIANT threads=$AIOS_THREADS"
     echo "AIOS: prompt microbatch=${AIOS_UBATCH:-auto}"
+    echo "AIOS: context=$AIOS_CONTEXT rope=${AIOS_ROPE_MODE:-model} model_mode=$AIOS_MODEL_MODE"
     if [ -r /sys/kernel/mm/transparent_hugepage/enabled ]; then
         echo "AIOS: transparent hugepage policy=$(cat /sys/kernel/mm/transparent_hugepage/enabled)"
     else
