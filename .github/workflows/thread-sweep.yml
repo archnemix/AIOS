@@ -1,0 +1,65 @@
+name: Prompt and generation thread sweep
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-thread-sweep.txt]
+permissions:
+  contents: write
+jobs:
+  benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [1, 2]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and benchmark thread counts
+        id: bench
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output/thread-sweep output/llama
+          curl -fsSL --retry 3 https://codeload.github.com/ggml-org/llama.cpp/tar.gz/74d4f5b041ad837153b0e90fc864b8290e01d8d5 -o output/llama.tar.gz
+          echo '8dd9fcc7c17f972673960ffdcc7521f52de5a9ec594aa6acebd9dfd8c17c0a5c  output/llama.tar.gz' | sha256sum -c -
+          tar xzf output/llama.tar.gz -C output/llama --strip-components=1
+          ./scripts/download-model.sh "$PWD/output/model.gguf" > output/thread-sweep/download.log 2>&1
+          cmake -S output/llama -B output/thread-sweep/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
+            -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=ON -DLLAMA_BUILD_SERVER=OFF -DLLAMA_CURL=OFF \
+            -DGGML_NATIVE=OFF -DGGML_AVX=ON -DGGML_AVX2=ON -DGGML_FMA=ON -DGGML_F16C=ON -DGGML_BMI2=ON \
+            -DGGML_AVX512=OFF -DGGML_LLAMAFILE=ON > output/thread-sweep/configure.log 2>&1
+          cmake --build output/thread-sweep/build --target llama-bench -j2 > output/thread-sweep/build.log 2>&1
+          python3 scripts/tuning/threads.py "$PWD/output/thread-sweep/build/bin/llama-bench" "$PWD/output/model.gguf" "$PWD/output/thread-sweep" > output/thread-sweep/summary.log 2>&1
+      - name: Save results
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ steps.bench.outcome }}
+          SOURCE: ${{ github.sha }}
+          SLOT: ${{ matrix.runner }}
+        run: |
+          set -euo pipefail
+          dest="results/thread-sweep/$RUN_ID-$SLOT"
+          mkdir -p "$dest"
+          printf 'source=%s outcome=%s\n' "$SOURCE" "$OUTCOME" > "$dest/status.txt"
+          if [ -f output/thread-sweep/results.json ]; then cp output/thread-sweep/results.json "$dest/results.json"; fi
+          for f in output/thread-sweep/*.log; do
+            if [ -f "$f" ]; then tail -n 60 "$f" > "$dest/$(basename "$f")"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          git restore --worktree .
+          git add "$dest"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record thread sweep $RUN_ID runner $SLOT"
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin arena/bce98461-aios
+              if git push origin HEAD:arena/bce98461-aios; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi
