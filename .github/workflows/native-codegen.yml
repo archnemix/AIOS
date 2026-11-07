@@ -1,0 +1,61 @@
+name: Generation CPU codegen screening
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-native-codegen.txt]
+permissions:
+  contents: write
+jobs:
+  benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [1, 2]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and benchmark thread counts
+        id: bench
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output/native-codegen output/llama
+          curl -fsSL --retry 3 https://codeload.github.com/ggml-org/llama.cpp/tar.gz/74d4f5b041ad837153b0e90fc864b8290e01d8d5 -o output/llama.tar.gz
+          echo '8dd9fcc7c17f972673960ffdcc7521f52de5a9ec594aa6acebd9dfd8c17c0a5c  output/llama.tar.gz' | sha256sum -c -
+          tar xzf output/llama.tar.gz -C output/llama --strip-components=1
+          ./scripts/download-model.sh "$PWD/output/model.gguf" > output/native-codegen/download.log 2>&1
+          ./scripts/tuning/native_codegen.sh "$PWD/output/llama" "$PWD/output/native-codegen" > output/native-codegen/build.log 2>&1
+          python3 scripts/tuning/native_codegen.py "$PWD/output/native-codegen" "$PWD/output/model.gguf" "$PWD/output/native-codegen" > output/native-codegen/summary.log 2>&1
+      - name: Save results
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ steps.bench.outcome }}
+          SOURCE: ${{ github.sha }}
+          SLOT: ${{ matrix.runner }}
+        run: |
+          set -euo pipefail
+          dest="results/native-codegen/$RUN_ID-$SLOT"
+          mkdir -p "$dest"
+          printf 'source=%s outcome=%s\n' "$SOURCE" "$OUTCOME" > "$dest/status.txt"
+          if [ -f output/native-codegen/results.json ]; then cp output/native-codegen/results.json "$dest/results.json"; fi
+          for f in output/native-codegen/*.log; do
+            if [ -f "$f" ]; then tail -n 60 "$f" > "$dest/$(basename "$f")"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          git restore --worktree .
+          git add "$dest"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record native CPU codegen screening $RUN_ID runner $SLOT"
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin arena/bce98461-aios
+              if git push origin HEAD:arena/bce98461-aios; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi
