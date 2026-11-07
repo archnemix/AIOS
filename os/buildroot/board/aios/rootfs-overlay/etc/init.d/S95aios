@@ -12,6 +12,8 @@ start() {
             aios.threads=1|aios.threads=2|aios.threads=4|aios.threads=8) AIOS_THREADS=${arg#*=} ;;
             aios.batch-threads=1|aios.batch-threads=2|aios.batch-threads=4|aios.batch-threads=8) AIOS_BATCH_THREADS=${arg#*=} ;;
             aios.poll=0|aios.poll=50|aios.poll=100) AIOS_POLL=${arg#*=} ;;
+            aios.k-cache=q8_0) AIOS_CACHE_K=q8_0 ;;
+            aios.k-cache=f16) AIOS_CACHE_K=f16 ;;
             aios.autotune=1) AIOS_THREADS=autotune ;;
             aios.ubatch=128) AIOS_UBATCH=128 ;;
             aios.ubatch=auto) AIOS_UBATCH=auto ;;
@@ -85,6 +87,12 @@ start() {
         *) echo "AIOS: invalid polling level" >&2; return 1 ;;
     esac
     echo "AIOS: batch threads=${AIOS_BATCH_THREADS:-auto} generation poll=${AIOS_POLL:-auto}"
+    case "${AIOS_CACHE_K:-f16}" in
+        f16) ;;
+        q8_0) set -- "$@" --cache-type-k q8_0 ;;
+        *) echo "AIOS: invalid key-cache type" >&2; return 1 ;;
+    esac
+    echo "AIOS: key cache=${AIOS_CACHE_K:-f16}"
     case "${AIOS_ROPE_MODE:-model}" in
         model) ;;
         linear2)

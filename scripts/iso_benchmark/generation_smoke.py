@@ -17,7 +17,7 @@ def test_generation_controls(output, directory, affinity, acceleration):
     if 'set default=0' not in config or 'aios.network=1' not in config:
         raise RuntimeError('network GRUB entry missing')
     config = config.replace('set default=0', 'set default=1', 1).replace(
-        'aios.network=1', 'aios.network=1 aios.threads=1 aios.batch-threads=2 aios.poll=100', 1)
+        'aios.network=1', 'aios.network=1 aios.threads=1 aios.batch-threads=2 aios.poll=100 aios.k-cache=q8_0', 1)
     (tree / 'boot/grub/grub.cfg').write_text(config)
     iso = directory / 'generation.iso'
     subprocess.run(['grub-mkrescue', '-o', str(iso), str(tree)], check=True,
@@ -36,7 +36,7 @@ def test_generation_controls(output, directory, affinity, acceleration):
             text = serial.read_text(errors='replace') if serial.exists() else ''
             token = re.search(r'AIOS_BOOT_TOKEN=([0-9a-f]{64})', text)
             if token and re.search(r'AIOS: inference backend=(portable|avx2) threads=1\b', text) and \
-                    'AIOS: batch threads=2 generation poll=100' in text:
+                    'AIOS: batch threads=2 generation poll=100' in text and 'AIOS: key cache=q8_0' in text:
                 client = Client(18082, token.group(1))
                 try:
                     if client.request('/health').get('status') == 'ok':
@@ -44,7 +44,7 @@ def test_generation_controls(output, directory, affinity, acceleration):
                                                 'ignore_eos': True, 'temperature': 0}, timeout=120)
                         if not result.get('content'):
                             raise RuntimeError('generation controls returned no output')
-                        return {'generation_threads': 1, 'batch_threads': 2, 'poll': 100, 'inference': 'passed'}
+                        return {'generation_threads': 1, 'batch_threads': 2, 'poll': 100, 'key_cache': 'q8_0', 'inference': 'passed'}
                 except (OSError, urllib.error.URLError, ValueError):
                     pass
             time.sleep(2)

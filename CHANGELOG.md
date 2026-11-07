@@ -48,3 +48,4 @@
 - Same-image KVM generation sweep found four generation threads faster than two on a four-vCPU EPYC runner at all three tested prompt lengths, with increased CPU use; the existing automatic topology policy may already select four. Polling did not consistently improve output speed.
 - Added same-two-CPU attention/cache generation screening with memory, process CPU time, response spot checks and optional performance counters; no inference defaults changed.
 - Added an opt-in same-two-CPU Q2-vs-Q3 model screening; the shipping model is unchanged pending speed and quality evidence.
+- Added an experimental, opt-in Q8 key-cache profile for the next ISO; F16 remains the default because precision changes can affect answers. Boot and guest performance tests are pending.

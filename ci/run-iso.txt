@@ -1,1 +1,1 @@
-Build ISO with generation-specific tuning controls.
+Build ISO with optional experimental Q8 key cache.
