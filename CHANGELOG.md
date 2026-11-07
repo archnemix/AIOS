@@ -37,3 +37,4 @@
 - Swept inference thread counts on separate Intel and AMD four-vCPU runners and recorded workload-specific scaling.
 - Add opt-in combined thread-calibration and microbatch boot profiles; ISO boot test pending.
 - Boot-tested the external-model profile with read-only disk, authentication and inference; Qwen-specific guest checks are separate.
+- Added an interleaved two-runner screening benchmark for GitHub Actions CPU inference settings; no default changed pending results and guest confirmation.
