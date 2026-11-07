@@ -1,0 +1,64 @@
+name: Chat-formatted long-context retrieval probes
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-retrieval.txt]
+permissions:
+  contents: write
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install QEMU and ISO tools
+        run: |
+          mkdir -p output/retrieval
+          opts='-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::ForceIPv4=true -o DPkg::Lock::Timeout=30'
+          timeout 120 sudo apt-get update $opts > output/retrieval/apt.log 2>&1 || echo 'Using cached package indexes' >> output/retrieval/apt.log
+          timeout 600 sudo apt-get install $opts --no-install-recommends -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools >> output/retrieval/apt.log 2>&1
+          if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
+      - name: Run retrieval probes
+        id: test
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "Source commit: $(git rev-parse 42be511)" results/iso/report.txt > /dev/null
+          cat results/iso/aios.iso.part-* > output/retrieval/aios.iso
+          (cd output/retrieval && sha256sum aios.iso) > output/retrieval/actual.sha256
+          diff results/iso/aios.iso.sha256 output/retrieval/actual.sha256
+          python3 scripts/os_tuning/retrieval.py output/retrieval/aios.iso > output/retrieval/report.txt 2>&1
+      - name: Record result
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ steps.test.outcome }}
+          SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          dest="results/retrieval/$RUN_ID"
+          mkdir -p "$dest"
+          printf 'source=%s outcome=%s\n' "$SOURCE" "$OUTCOME" > "$dest/status.txt"
+          for f in report.txt actual.sha256 apt.log; do
+            if [ -f "output/retrieval/$f" ]; then cp "output/retrieval/$f" "$dest/$f"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          # Keep the untracked run-specific report, but clean tracked files
+          # changed by resetting an older checkout to the current branch tip.
+          git restore --worktree .
+          git add "$dest"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record long-context retrieval probes $RUN_ID"
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin arena/bce98461-aios
+              if git push origin HEAD:arena/bce98461-aios; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi
