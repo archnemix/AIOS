@@ -108,3 +108,5 @@ qemu-system-x86_64 -machine accel=kvm -cpu host -m 3072 -smp 2 -nographic \
 ```
 
 This binds the host-forwarded port to loopback, but the guest network entry listens on all guest interfaces without TLS. Use it only on a trusted network with suitable access controls. Supply the disk's private key as `AIOS_API_TOKEN` for requests. RAM requirements vary with model, context and guest overhead; 3 GiB is a test configuration, not a guarantee for every model or system.
+
+ISO run `42363787726` (source `7b3b9c8`) boot-tested the new scoped two-thread AVX2 embedded-model default, verified authentication and inference, and confirmed microbatch 128. The Linux comparison used that same microbatch. This image also passed the external-volume, extended-context and combined-tuning boot smokes. Its SHA-256 is `b6ef018ad0f23a13e61fc67b7a1015e891745d5ba5d028f6c5119bea00482139`; split parts are in `results/iso/`. Restore the prior batching with kernel argument `aios.ubatch=auto`.
