@@ -43,3 +43,4 @@
 - ISO run `42363787726` booted and validated the scoped optimized default; same-image before/after performance test is running.
 - Same-ISO KVM comparison `42365054983` confirmed faster prompt ingestion with the scoped default but observed lower generation rates; retained `aios.ubatch=auto` as a rollback.
 - Qwen external-model guest test completed: 32,000 input tokens were evaluated and one 16k retrieval probe succeeded; see `technical.md` for the limitations and Linux/KVM comparison.
+- Screened host-specific CPU code generation for short output throughput; no convincing two-thread generation gain, so no unsafe host-specific binary was shipped.
