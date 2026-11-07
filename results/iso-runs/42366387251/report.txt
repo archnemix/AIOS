@@ -1,0 +1,284 @@
+# ISO build result
+
+Source commit: 23e8d8a4ad8797329408fed8dfb73df5e5b07324
+Workflow run: 42366387251
+Build and smoke test: success
+
+## Build dependency summary
+Processing triggers for install-info (7.1-3build2) ...
+Processing triggers for hicolor-icon-theme (0.17-2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Not building database; man-db/auto-update is not 'true'.
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+## Unit test summary
+test_reject_unrequested_or_invalid_measurements (test_thread_tuning.TuningPickerTests.test_reject_unrequested_or_invalid_measurements) ... ok
+test_features_are_intersection_across_cpus (test_tuning.TuningTests.test_features_are_intersection_across_cpus) ... ok
+test_names_do_not_match_substrings (test_tuning.TuningTests.test_names_do_not_match_substrings) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 2.355s
+
+OK
+
+## Model download summary
+100 89.1M  100 89.1M    0     0   148M      0 --:--:-- --:--:-- --:--:--  148M
+/home/runner/work/AIOS/AIOS/output/model.gguf.download: OK
+
+## Build summary
+printf '   	rm -rf /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/usr/lib/udev/hwdb.d/ /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/etc/udev/hwdb.d/\n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   	if [ ! -e /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/init ]; then /usr/bin/install -m 0755 fs/cpio/init /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/init; fi\n	mkdir -p /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/targ
+echo "find /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/run/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+echo "find /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target/tmp/ -mindepth 1 -prune -print0 | xargs -0r rm -rf --" >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   \n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   \n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+printf '   	cd /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target && find . | LC_ALL=C sort | cpio  --quiet -o -H newc > /home/runner/work/AIOS/AIOS/output/iso/images/rootfs.cpio\n' >> /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+chmod a+x /home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/fakeroot
+PATH="/home/runner/work/AIOS/AIOS/output/iso/host/bin:/home/runner/work/AIOS/AIOS/output/iso/host/sbin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr
+rootdir=/home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/cpio/target
+table='/home/runner/work/AIOS/AIOS/output/iso/build/buildroot-fs/full_devices_table.txt'
+PATH="/home/runner/work/AIOS/AIOS/output/iso/host/bin:/home/runner/work/AIOS/AIOS/output/iso/host/sbin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr
+ln -snf /home/runner/work/AIOS/AIOS/output/iso/host/x86_64-buildroot-linux-gnu/sysroot /home/runner/work/AIOS/AIOS/output/iso/staging
+make: Leaving directory '/home/runner/work/AIOS/AIOS/output/buildroot'
+xorriso 1.5.6 : RockRidge filesystem manipulator, libburnia project.
+
+Drive current: -outdev 'stdio:/home/runner/work/AIOS/AIOS/output/iso/aios.iso'
+Media current: stdio file, overwriteable
+Media status : is blank
+Media summary: 0 sessions, 0 data blocks, 0 data, 80.3g free
+Added to ISO image: directory '/'='/tmp/grub.qIoaAn'
+xorriso : UPDATE :     588 files added in 1 seconds
+Added to ISO image: directory '/'='/home/runner/work/AIOS/AIOS/output/iso/iso-tree'
+xorriso : UPDATE :     593 files added in 1 seconds
+xorriso : NOTE : Copying to System Area: 512 bytes from file '/usr/lib/grub/i386-pc/boot_hybrid.img'
+ISO image produced: 58124 sectors
+Written to medium : 58124 sectors at LBA 0
+Writing to 'stdio:/home/runner/work/AIOS/AIOS/output/iso/aios.iso' completed successfully.
+
+ISO: /home/runner/work/AIOS/AIOS/output/iso/aios.iso
+
+## QEMU smoke test
+PASS: oversized prompt rejected rather than silently truncated
+PASS: ISO test copy booted; API rejected an invalid token and generated model text
+QEMU acceleration: KVM
+Short inference comparison:
+{
+  "acceleration": "KVM",
+  "guest_ram_mib": 1024,
+  "inference_backend": "avx2",
+  "prompt_microbatch": "128",
+  "host_cpu": "AMD EPYC 7763 64-Core Processor",
+  "host_mem_total_kib": 16367524,
+  "logical_cpus_pinned": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "context_configured": 8192,
+  "host_kernel": "7.0.0-1017-azure",
+  "boot_to_ready_seconds": 16.027876746999937,
+  "iso_bytes": 119037952,
+  "comparison": {
+    "samples": {
+      "github_linux": [
+        {
+          "ttft_seconds": 0.1669636060000812,
+          "wall_seconds": 0.4800854679999702,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 245.30697101084868,
+          "output_tokens_per_second": 101.63473112849488
+        },
+        {
+          "ttft_seconds": 0.16549043300005906,
+          "wall_seconds": 0.4821614459999637,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 243.35785163688575,
+          "output_tokens_per_second": 101.07007946634997
+        },
+        {
+          "ttft_seconds": 0.15937516899998627,
+          "wall_seconds": 0.4759671449999132,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 252.37389192088077,
+          "output_tokens_per_second": 101.1064840852075
+        }
+      ],
+      "aios_vm": [
+        {
+          "ttft_seconds": 0.16733630199996696,
+          "wall_seconds": 0.48527503400009664,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 242.0516296125964,
+          "output_tokens_per_second": 100.60520317535173
+        },
+        {
+          "ttft_seconds": 0.1634725830001571,
+          "wall_seconds": 0.47483553000006395,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 251.84476288815574,
+          "output_tokens_per_second": 101.8132299929049
+        },
+        {
+          "ttft_seconds": 0.16972531500005061,
+          "wall_seconds": 0.4786540539998896,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 243.97831032821182,
+          "output_tokens_per_second": 102.62001731712793
+        }
+      ]
+    },
+    "medians": {
+      "github_linux": {
+        "ttft_seconds": 0.16549043300005906,
+        "wall_seconds": 0.4800854679999702,
+        "prompt_tokens_per_second": 245.30697101084868,
+        "output_tokens_per_second": 101.1064840852075
+      },
+      "aios_vm": {
+        "ttft_seconds": 0.16733630199996696,
+        "wall_seconds": 0.4786540539998896,
+        "prompt_tokens_per_second": 243.97831032821182,
+        "output_tokens_per_second": 101.8132299929049
+      }
+    },
+    "guest_to_host_output_rate_ratio": 1.0069901145717004
+  },
+  "rss_kib_after_short_tests": {
+    "host_server": 343192,
+    "qemu_process_including_guest": 489804
+  }
+}
+Checking 2,048 input tokens on each environment.
+{"context": "github_linux", "result": {"input_tokens": 2048, "tokens_evaluated": 2048, "truncated": false, "wall_seconds": 12.562377865999906, "passed": true}}
+{"context": "aios_vm", "result": {"input_tokens": 2048, "tokens_evaluated": 2048, "truncated": false, "wall_seconds": 12.61476450500004, "passed": true}}
+{
+  "acceleration": "KVM",
+  "guest_ram_mib": 1024,
+  "inference_backend": "avx2",
+  "prompt_microbatch": "128",
+  "host_cpu": "AMD EPYC 7763 64-Core Processor",
+  "host_mem_total_kib": 16367524,
+  "logical_cpus_pinned": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "context_configured": 8192,
+  "host_kernel": "7.0.0-1017-azure",
+  "boot_to_ready_seconds": 16.027876746999937,
+  "iso_bytes": 119037952,
+  "comparison": {
+    "samples": {
+      "github_linux": [
+        {
+          "ttft_seconds": 0.1669636060000812,
+          "wall_seconds": 0.4800854679999702,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 245.30697101084868,
+          "output_tokens_per_second": 101.63473112849488
+        },
+        {
+          "ttft_seconds": 0.16549043300005906,
+          "wall_seconds": 0.4821614459999637,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 243.35785163688575,
+          "output_tokens_per_second": 101.07007946634997
+        },
+        {
+          "ttft_seconds": 0.15937516899998627,
+          "wall_seconds": 0.4759671449999132,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 252.37389192088077,
+          "output_tokens_per_second": 101.1064840852075
+        }
+      ],
+      "aios_vm": [
+        {
+          "ttft_seconds": 0.16733630199996696,
+          "wall_seconds": 0.48527503400009664,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 242.0516296125964,
+          "output_tokens_per_second": 100.60520317535173
+        },
+        {
+          "ttft_seconds": 0.1634725830001571,
+          "wall_seconds": 0.47483553000006395,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 251.84476288815574,
+          "output_tokens_per_second": 101.8132299929049
+        },
+        {
+          "ttft_seconds": 0.16972531500005061,
+          "wall_seconds": 0.4786540539998896,
+          "prompt_tokens": 40,
+          "output_tokens": 32,
+          "prompt_tokens_per_second": 243.97831032821182,
+          "output_tokens_per_second": 102.62001731712793
+        }
+      ]
+    },
+    "medians": {
+      "github_linux": {
+        "ttft_seconds": 0.16549043300005906,
+        "wall_seconds": 0.4800854679999702,
+        "prompt_tokens_per_second": 245.30697101084868,
+        "output_tokens_per_second": 101.1064840852075
+      },
+      "aios_vm": {
+        "ttft_seconds": 0.16733630199996696,
+        "wall_seconds": 0.4786540539998896,
+        "prompt_tokens_per_second": 243.97831032821182,
+        "output_tokens_per_second": 101.8132299929049
+      }
+    },
+    "guest_to_host_output_rate_ratio": 1.0069901145717004
+  },
+  "rss_kib_after_short_tests": {
+    "host_server": 343192,
+    "qemu_process_including_guest": 489804
+  },
+  "context_checks": {
+    "github_linux": {
+      "input_tokens": 2048,
+      "tokens_evaluated": 2048,
+      "truncated": false,
+      "wall_seconds": 12.562377865999906,
+      "passed": true
+    },
+    "aios_vm": {
+      "input_tokens": 2048,
+      "tokens_evaluated": 2048,
+      "truncated": false,
+      "wall_seconds": 12.61476450500004,
+      "passed": true
+    }
+  },
+  "limitations": "Same runner, model and executable; host native versus a QEMU VM. KVM still includes virtualization and guest RAM differences. TCG is emulated and is not a fair OS speed comparison. 8192 configured is not the same as 8192 validated."
+}
+Tuning boot: {"selected_threads": 2, "model_inference": "passed"}
+Microbatch boot: {"microbatch": 128, "model_inference": "passed"}
+Experimental 16k boot: {"context": 16384, "input_tokens": 9000, "truncated": false, "model_inference": "passed"}
+External-model boot: {"context": 32768, "model_mode": "external", "auth": "passed", "model_inference": "passed", "note": "embedded SmolLM2 copied to test disk"}
+Generation controls boot: {"generation_threads": 1, "batch_threads": 2, "poll": 100, "inference": "passed"}
+Combined tuning boot: {"selected_threads": 2, "microbatch": 128, "model_inference": "passed"}
