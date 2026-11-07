@@ -52,3 +52,4 @@
 - Same-two-CPU native screening found faster medium/long generation with a Q8 key cache on two runners, but responses changed and hardware counters were denied; F16 remains the default. A smaller Q2 model was not adopted.
 - ISO run `42382270658` boot-tested the experimental Q8 key-cache profile; the F16 default is unchanged and the same-image performance comparison is running.
 - Same-ISO KVM test measured Q8-key generation improvements on one two-CPU AMD runner, but responses changed and quality remains unverified; the F16 default remains unchanged.
+- Repeated the experimental Q8 key-cache test in booted guests on a second AMD runner: medium/long generation improved with the same two threads, while short generation regressed and output quality remains unverified.
