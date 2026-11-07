@@ -1,0 +1,1 @@
+Screen Q2 vs Q3 model generation at the same CPU allocation.
