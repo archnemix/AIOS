@@ -32,3 +32,4 @@
 - Measured guest THP policy and prompt microbatch separately and together; the THP effect remains inconclusive.
 - Measured thread tuning and microbatch individually and together; the tuner selected two threads in that test.
 - Compared the 16k profile with the same binary on ordinary Linux at five input lengths; recorded the failed synthetic retrieval probe and its limitations.
+- Added a chat-formatted retrieval probe at five context lengths and recorded failures rather than treating accepted input as reliable recall.
