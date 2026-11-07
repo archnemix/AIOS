@@ -1,0 +1,69 @@
+name: Generation CPU settings comparison
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-generation-compare.txt]
+permissions:
+  contents: write
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        vcpus: [2, 4]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install QEMU and ISO tools
+        run: |
+          mkdir -p output/generation-compare
+          opts='-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::ForceIPv4=true -o DPkg::Lock::Timeout=30'
+          timeout 120 sudo apt-get update $opts > output/generation-compare/apt.log 2>&1 || echo 'Using cached package indexes' >> output/generation-compare/apt.log
+          timeout 600 sudo apt-get install $opts --no-install-recommends -y qemu-system-x86 xorriso grub-pc-bin grub-common mtools >> output/generation-compare/apt.log 2>&1
+          if [ -e /dev/kvm ]; then sudo chmod a+rw /dev/kvm; fi
+      - name: Compare generation thread and polling settings
+        id: test
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "Source commit: $(git rev-parse 23e8d8a)" results/iso/report.txt > /dev/null
+          cat results/iso/aios.iso.part-* > output/generation-compare/aios.iso
+          (cd output/generation-compare && sha256sum aios.iso) > output/generation-compare/actual.sha256
+          diff results/iso/aios.iso.sha256 output/generation-compare/actual.sha256
+          python3 scripts/os_tuning/generation_compare.py output/generation-compare/aios.iso "${{ matrix.vcpus }}" > output/generation-compare/report.txt 2>&1
+      - name: Record result
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ steps.test.outcome }}
+          VCPUS: ${{ matrix.vcpus }}
+          SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          dest="results/generation-compare/$RUN_ID-$VCPUS"
+          mkdir -p "$dest"
+          printf 'source=%s outcome=%s\n' "$SOURCE" "$OUTCOME" > "$dest/status.txt"
+          for f in report.txt actual.sha256 apt.log; do
+            if [ -f "output/generation-compare/$f" ]; then cp "output/generation-compare/$f" "$dest/$f"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          # Keep the untracked run-specific report, but clean tracked files
+          # changed by resetting an older checkout to the current branch tip.
+          git restore --worktree .
+          git add "$dest"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record generation CPU comparison $RUN_ID"
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin arena/bce98461-aios
+              if git push origin HEAD:arena/bce98461-aios; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi
