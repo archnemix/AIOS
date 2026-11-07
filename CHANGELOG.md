@@ -50,3 +50,4 @@
 - Added an opt-in same-two-CPU Q2-vs-Q3 model screening; the shipping model is unchanged pending speed and quality evidence.
 - Added an experimental, opt-in Q8 key-cache profile for the next ISO; F16 remains the default because precision changes can affect answers. Boot and guest performance tests are pending.
 - Same-two-CPU native screening found faster medium/long generation with a Q8 key cache on two runners, but responses changed and hardware counters were denied; F16 remains the default. A smaller Q2 model was not adopted.
+- ISO run `42382270658` boot-tested the experimental Q8 key-cache profile; the F16 default is unchanged and the same-image performance comparison is running.
