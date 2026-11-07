@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from os_tuning import combination, decode_cache, generation_compare
+from os_tuning import combination, decode_cache, generation_compare, quality_probes
 
 
 def main():
@@ -52,11 +52,12 @@ def main():
                                             'max_tokens': 32, 'temperature': 0}, timeout=180)
                     answers.append(result['choices'][0]['message']['content'])
                 quality[name] = answers
+            fact_smoke = {name: quality_probes.run(client) for (name, _), client in zip(modes, clients)}
             report = {'cpu': cpu, 'kernel': platform.release(), 'host_affinity': cpus, 'threads': 2,
                       'guest_vcpus': 2, 'guest_ram_mib': 2048, 'ubatch': 128,
-                      'quality_spot_responses': quality, 'results': {},
+                      'quality_spot_responses': quality, 'fact_smoke': fact_smoke, 'results': {},
                       'limitations': 'Same ISO/model/CPU allocation, two KVM guests, F16 value cache in both. '
-                      'Q8 key cache is lossy and can change responses; five short prompts are not a quality '
+                      'Q8 key cache is lossy and can change responses; short chat and ten fact smoke prompts are not a quality '
                       'benchmark. Synthetic repeated tokens, fixed boot order, three samples at 256/2048 '
                       'and two at 8000. Other guest suspended during measurement. QEMU CPU seconds include '
                       'prefill, output, and virtualization, not energy. Not a Linux/Windows comparison.'}
