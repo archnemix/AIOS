@@ -29,3 +29,4 @@
 - Add experimental 16k RoPE-scaled boot entries and THP-policy measurement support; image and quality tests pending.
 - Benchmarked Linux process affinity and THP opt-out individually and combined; neither is enabled by default based on the inconclusive result.
 - Boot-tested the opt-in 16k profile with a 9,000-token input; recorded before/after throughput at 256, 2,048, and 8,000 input tokens.
+- Measured guest THP policy and prompt microbatch separately and together; the THP effect remains inconclusive.
