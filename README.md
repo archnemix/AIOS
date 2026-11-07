@@ -29,3 +29,7 @@ An experimental BIOS ISO build embeds the 135M-parameter SmolLM2 model and boots
 ## Experimental CPU adaptation
 
 The image build now includes a portable server and an AVX2 server, selecting the latter only when the processor and Linux expose the required features. It also reports CPU topology, cache and available host memory and chooses a conservative starting thread count. A standalone same-machine kernel test showed a large improvement on one AMD runner; the integrated image has also passed a QEMU/KVM boot and inference test. See [technical.md](technical.md) for results and limitations.
+
+## Choosing a boot profile
+
+The normal local-only entry uses the model's 8,192-token context. For longer prompts within that limit, the experimental **prompt microbatch 128** entry was faster in several measured CPU tests; it may not be faster on every machine. A separate experimental **16k context** entry lets the server accept longer input using position scaling. It has booted and processed a 9,000-token input with 2 GiB of guest RAM, but the embedded model was trained for 8,192 tokens and may not reliably use information beyond that length. Input and output share the configured context. Network entries expose unencrypted HTTP and should only be used behind appropriate protections. Details and measured results are in [the ISO guide](docs/iso.md).
