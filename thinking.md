@@ -141,3 +141,7 @@ Run 42321205469 booted the new experimental profile under KVM with 2 GiB guest R
 ## Guest THP × microbatch factorial
 
 Run 42323397838 booted four guests from the same image on an AMD EPYC 9V74. Three alternating 2,048-token prompt samples after warmup produced median prompt rates of 177.45 tokens/s (THP never, default microbatch), 179.22 (always, default), 191.57 (never, 128), and 192.04 (always, 128). Guest THP policy was checked, but actual process hugepage backing was not, so the small THP difference cannot be attributed to huge pages and does not justify a default policy change. Microbatch 128 improved this workload by about 8% under both policies; it remains opt-in rather than being assumed optimal across all models and hardware.
+
+## Thread tuner × microbatch combination
+
+Run 42323792978 compared fixed two threads, microbatch 128 alone, boot-time tuner alone, and tuner plus microbatch in four KVM guests using the same ISO and model on an AMD EPYC 7763. The tuner chose two threads for both calibrated guests. For a 2,048-token prompt, the respective median prompt/generation rates were 143.84/49.33, 155.97/49.35, 143.41/49.05 and 156.30/50.48 tokens/s. Three alternating samples followed warmup. Here the microbatch drove the gain and the tuner did not select a different thread count; the small decode differences are not proof of a tuner benefit. Calibration adds startup latency and is not universally optimal.
