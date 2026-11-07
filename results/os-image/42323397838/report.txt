@@ -1,0 +1,154 @@
+{
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "kernel": "7.0.0-1017-azure",
+  "acceleration": "KVM",
+  "host_affinity": [
+    0,
+    1
+  ],
+  "threads": 2,
+  "guest_ram_mib": 1024,
+  "modes": [
+    {
+      "thp": "never",
+      "ubatch": "default",
+      "median_prompt_ms": 11541.533,
+      "prompt_tokens_per_second": 177.4460983649226,
+      "samples": [
+        {
+          "wall_seconds": 11.601162310999996,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 11598.439,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 11.544583751000005,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 11541.533,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 11.517403347999988,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 11514.931,
+          "truncated": false,
+          "generated_tokens": 1
+        }
+      ]
+    },
+    {
+      "thp": "always",
+      "ubatch": "default",
+      "median_prompt_ms": 11427.313,
+      "prompt_tokens_per_second": 179.21973433299675,
+      "samples": [
+        {
+          "wall_seconds": 11.589543428000013,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 11586.38,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 11.424156076999992,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 11421.127,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 11.430643917999987,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 11427.313,
+          "truncated": false,
+          "generated_tokens": 1
+        }
+      ]
+    },
+    {
+      "thp": "never",
+      "ubatch": 128,
+      "median_prompt_ms": 10690.479,
+      "prompt_tokens_per_second": 191.57233272709297,
+      "samples": [
+        {
+          "wall_seconds": 10.712023240999997,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 10709.037,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 10.673138074000008,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 10669.526,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 10.693519305999985,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 10690.479,
+          "truncated": false,
+          "generated_tokens": 1
+        }
+      ]
+    },
+    {
+      "thp": "always",
+      "ubatch": 128,
+      "median_prompt_ms": 10664.249,
+      "prompt_tokens_per_second": 192.04352786586284,
+      "samples": [
+        {
+          "wall_seconds": 10.667289576000002,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 10664.249,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 10.588221965999992,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 10585.599,
+          "truncated": false,
+          "generated_tokens": 1
+        },
+        {
+          "wall_seconds": 10.667659613000012,
+          "input_tokens": 2048,
+          "tokens_evaluated": 2048,
+          "prompt_tokens_processed": 2048,
+          "prompt_ms": 10665.127,
+          "truncated": false,
+          "generated_tokens": 1
+        }
+      ]
+    }
+  ],
+  "limitations": "Same image, fixed guest boot order and single synthetic prompt. Kernel policy verified, actual hugepage backing not measured. A policy of always does not prove allocations used huge pages. Three samples; not a bare-metal OS comparison."
+}
