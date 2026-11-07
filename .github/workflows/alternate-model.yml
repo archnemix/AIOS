@@ -1,0 +1,63 @@
+name: Optional native long-context model test
+on:
+  push:
+    branches: [arena/bce98461-aios]
+    paths: [ci/run-alternate-model.txt]
+permissions:
+  contents: write
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install ISO extraction tools
+        run: |
+          mkdir -p output/alternate-model
+          opts='-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::ForceIPv4=true -o DPkg::Lock::Timeout=30'
+          timeout 120 sudo apt-get update $opts > output/alternate-model/apt.log 2>&1 || echo 'Using cached package indexes' >> output/alternate-model/apt.log
+          timeout 600 sudo apt-get install $opts --no-install-recommends -y cpio xorriso >> output/alternate-model/apt.log 2>&1
+      - name: Verify models and compare on native Linux
+        id: test
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "Source commit: $(git rev-parse 42be511)" results/iso/report.txt > /dev/null
+          cat results/iso/aios.iso.part-* > output/alternate-model/aios.iso
+          (cd output/alternate-model && sha256sum aios.iso) > output/alternate-model/actual.sha256
+          diff results/iso/aios.iso.sha256 output/alternate-model/actual.sha256
+          curl -fL --retry 3 'https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q3_k_m.gguf' -o output/alternate-model/qwen.gguf > output/alternate-model/download.log 2>&1
+          echo '590d2479d401db206fe12a4562294d2de6211e06338a6e34fbad64b32f1469d0  output/alternate-model/qwen.gguf' | sha256sum -c - >> output/alternate-model/download.log
+          python3 scripts/os_tuning/alternate_model.py output/alternate-model/aios.iso output/alternate-model/qwen.gguf > output/alternate-model/report.txt 2>&1
+      - name: Record result
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          OUTCOME: ${{ steps.test.outcome }}
+          SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          dest="results/alternate-model/$RUN_ID"
+          mkdir -p "$dest"
+          printf 'source=%s outcome=%s\n' "$SOURCE" "$OUTCOME" > "$dest/status.txt"
+          for f in report.txt actual.sha256 apt.log download.log; do
+            if [ -f "output/alternate-model/$f" ]; then cp "output/alternate-model/$f" "$dest/$f"; fi
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin arena/bce98461-aios
+          git reset --mixed origin/arena/bce98461-aios
+          git restore --worktree .
+          git add "$dest"
+          if ! git diff --cached --quiet; then
+            git commit -m "Record alternate model evaluation $RUN_ID"
+            for attempt in 1 2 3 4; do
+              git pull --rebase origin arena/bce98461-aios
+              if git push origin HEAD:arena/bce98461-aios; then exit 0; fi
+              sleep $((attempt * 3))
+            done
+            exit 1
+          fi
