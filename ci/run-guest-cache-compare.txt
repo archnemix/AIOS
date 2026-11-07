@@ -1,1 +1,1 @@
-Compare Q8 vs F16 key cache in booted two-vCPU guests.
+Repeat guest key-cache comparison with improved quality smoke reporting.

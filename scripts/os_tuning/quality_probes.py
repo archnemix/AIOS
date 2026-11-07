@@ -22,12 +22,20 @@ def first_word(text):
     return match.group(0).lower() if match else ''
 
 
+def contains_accepted(text, accepted):
+    # A loose smoke indicator: can match a negated or quoted answer, so this
+    # is not an accuracy grade and must be reviewed together with raw text.
+    return any(re.search(r'(?<!\w)' + re.escape(value) + r'(?!\w)', text, re.IGNORECASE)
+               for value in accepted)
+
+
 def run(client):
     results = []
     for question, accepted in PROBES:
         result = client.request('/v1/chat/completions', {'messages': [{'role': 'user', 'content': question}],
-                                'max_tokens': 12, 'temperature': 0}, timeout=180)
+                                'max_tokens': 32, 'temperature': 0}, timeout=180)
         answer = result['choices'][0]['message']['content']
         results.append({'question': question, 'answer': answer, 'accepted_first_words': accepted,
-                        'first_word_matches': first_word(answer) in accepted})
+                        'first_word_matches': first_word(answer) in accepted,
+                        'contains_accepted': contains_accepted(answer, accepted)})
     return results
