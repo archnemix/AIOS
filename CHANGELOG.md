@@ -26,3 +26,4 @@
 - Verified the default oversized-input rejection in a new booted O3 ISO.
 - Boot-tested the experimental microbatch-128 profile and its inference path.
 - Measured the opt-in 128-token prompt microbatch against the normal boot profile on the same ISO and runner.
+- Add experimental 16k RoPE-scaled boot entries and THP-policy measurement support; image and quality tests pending.

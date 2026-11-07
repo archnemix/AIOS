@@ -2,3 +2,4 @@ ISO build trigger: calibration with bounded minimal dependencies
 2026-11-06T14:38:45Z compiler-O3
 2026-11-06T15:01:22Z context-safety
 2026-11-06T15:05:55Z microbatch
+2026-11-07T00:56:07Z thp-16k

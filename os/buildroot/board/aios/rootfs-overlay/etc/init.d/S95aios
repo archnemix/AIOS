@@ -22,6 +22,7 @@ start() {
                     aios.threads=2) AIOS_THREADS=2 ;;
                     aios.autotune=1) AIOS_THREADS=autotune ;;
                     aios.ubatch=128) AIOS_UBATCH=128 ;;
+                    aios.context=16k) AIOS_CONTEXT=16384; AIOS_ROPE_MODE=linear2 ;;
                 esac
             done
             ;;
@@ -63,6 +64,17 @@ start() {
     # Reject oversized requests by default rather than silently dropping input.
     # Context shift remains an explicit trusted-configuration choice.
     set -- --threads "$AIOS_THREADS" --ctx-size "$AIOS_CONTEXT" --no-webui
+    case "${AIOS_ROPE_MODE:-model}" in
+        model) ;;
+        linear2)
+            if [ "$AIOS_CONTEXT" != 16384 ]; then
+                echo "AIOS: linear2 requires a 16384-token context" >&2; return 1
+            fi
+            set -- "$@" --rope-scaling linear --rope-scale 2
+            echo "AIOS: experimental 16k context; quality beyond training length is not guaranteed"
+            ;;
+        *) echo "AIOS: invalid AIOS_ROPE_MODE" >&2; return 1 ;;
+    esac
     case "${AIOS_UBATCH:-auto}" in
         auto) ;;
         128) set -- "$@" --ubatch-size 128 ;;
@@ -75,6 +87,11 @@ start() {
     esac
     echo "AIOS: inference backend=$VARIANT threads=$AIOS_THREADS"
     echo "AIOS: prompt microbatch=${AIOS_UBATCH:-auto}"
+    if [ -r /sys/kernel/mm/transparent_hugepage/enabled ]; then
+        echo "AIOS: transparent hugepage policy=$(cat /sys/kernel/mm/transparent_hugepage/enabled)"
+    else
+        echo "AIOS: transparent hugepage policy=unavailable"
+    fi
     if ! start-stop-daemon -S -b -m -p "$PIDFILE" -c aios \
         -x "$BACKEND" -- \
         -m "$MODEL" --api-key-file "$KEY" \

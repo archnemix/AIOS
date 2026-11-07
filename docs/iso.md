@@ -78,3 +78,5 @@ The context-safe O3 image passed boot, inference, authentication, the 2,048-toke
 The microbatch-profile image passed boot, authentication, normal inference, oversized-input rejection, the tuned-thread boot, and a separate microbatch-128 boot/inference smoke test in run `42239858115`. Its split files are preserved at commit `6197296`; SHA-256: `cae8324fa57a7c3bb7ee1737e911d0e8b149acbcb5f437f5d122f6f4242cd689`. The microbatch entry remains experimental pending a same-image speed comparison.
 
 In same-image KVM run `42243833933` on one AMD EPYC 7763, the microbatch-128 entry improved median processing of a synthetic 2,048-token prompt by about 8.5% versus the normal entry (13.903 versus 12.816 seconds). This is not guaranteed for other CPUs, models or workloads; the normal entry remains the default.
+
+An upcoming experimental boot profile offers a 16,384-token configured context using linear RoPE scaling. The embedded model was trained for 8,192 tokens, so capacity beyond that does **not** imply reliable answers. It also needs more memory and is not the default. Pending the new build, neither the profile nor its long-input smoke test has been validated.
