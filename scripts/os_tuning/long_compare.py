@@ -40,8 +40,8 @@ def extract_target(iso, temp):
         # Preserve the image's libraries and loader so the native and guest
         # tests use the same binary and target userspace, not a new build.
         proc = subprocess.Popen(['cpio', '-id', '--quiet', '--no-absolute-filenames',
-                                 './lib/*', './usr/lib/*', './usr/bin/llama-server-avx2',
-                                 './opt/aios/model.gguf'], cwd=target, stdin=subprocess.PIPE,
+                                 'lib/*', 'usr/lib/*', 'usr/bin/llama-server-avx2',
+                                 'opt/aios/model.gguf'], cwd=target, stdin=subprocess.PIPE,
                                 stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         try:
             while chunk := source.read(1024 * 1024):
