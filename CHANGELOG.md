@@ -45,3 +45,4 @@
 - Qwen external-model guest test completed: 32,000 input tokens were evaluated and one 16k retrieval probe succeeded; see `technical.md` for the limitations and Linux/KVM comparison.
 - Screened host-specific CPU code generation for short output throughput; no convincing two-thread generation gain, so no unsafe host-specific binary was shipped.
 - Boot-tested bounded, opt-in generation threads, prompt threads and polling controls in ISO run `42366387251`; a same-image speed comparison is running.
+- Same-image KVM generation sweep found four generation threads faster than two on a four-vCPU EPYC runner at all three tested prompt lengths, with increased CPU use; the existing automatic topology policy may already select four. Polling did not consistently improve output speed.
