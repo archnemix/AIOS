@@ -35,3 +35,4 @@
 - Added a chat-formatted retrieval probe at five context lengths and recorded failures rather than treating accepted input as reliable recall.
 - Compare optional 0.5B long-context model on Linux and add opt-in external-model 32k ISO profiles; external-volume boot test pending.
 - Swept inference thread counts on separate Intel and AMD four-vCPU runners and recorded workload-specific scaling.
+- Add opt-in combined thread-calibration and microbatch boot profiles; ISO boot test pending.
