@@ -12,6 +12,7 @@ start() {
             aios.threads=2) AIOS_THREADS=2 ;;
             aios.autotune=1) AIOS_THREADS=autotune ;;
             aios.ubatch=128) AIOS_UBATCH=128 ;;
+            aios.ubatch=auto) AIOS_UBATCH=auto ;;
             aios.context=16k) AIOS_CONTEXT=16384; AIOS_ROPE_MODE=linear2 ;;
             aios.context=32k) AIOS_CONTEXT=32768; AIOS_ROPE_MODE=model ;;
             aios.external=1) AIOS_MODEL_MODE=external; AIOS_DATA_DEVICE=/dev/vda ;;
@@ -62,6 +63,9 @@ start() {
     fi
     if [ "$AIOS_THREADS" = auto ]; then
         AIOS_THREADS=$(/usr/bin/aios-hardware --threads) || return 1
+    fi
+    if [ "${AIOS_UBATCH:-auto}" = ci-auto ]; then
+        AIOS_UBATCH=$(/usr/libexec/aios-select-ubatch "$AIOS_MODEL_MODE" "$VARIANT" "$AIOS_THREADS") || return 1
     fi
     # Reject oversized requests by default rather than silently dropping input.
     # Context shift remains an explicit trusted-configuration choice.

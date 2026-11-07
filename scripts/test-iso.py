@@ -166,6 +166,15 @@ def main():
             cmd = affinity + [str(loaders[0]), "--library-path", libraries, str(binary),
                               "-m", str(model), "--api-key-file", str(key), "--host", "127.0.0.1", "--port", "18081",
                               "--threads", "2", "--ctx-size", "8192", "--no-webui", "--no-context-shift"]
+            # Compare with the same microbatch actually chosen inside the guest.
+            microbatch = re.search(r"AIOS: prompt microbatch=(auto|128)\b", boot_log)
+            if not microbatch:
+                raise RuntimeError("guest did not report its prompt microbatch")
+            expected = "128" if variant == "avx2" else "auto"
+            if microbatch.group(1) != expected:
+                raise RuntimeError("ISO did not select the expected default microbatch")
+            if expected == "128":
+                cmd += ["--ubatch-size", "128"]
             baseline = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             host = Client(18081, key.read_text().strip())
             wait_for_health(host, baseline, 600)
@@ -174,7 +183,7 @@ def main():
             memory = Path("/proc/meminfo").read_text()
             memory_match = re.search(r"^MemTotal:\s*(\d+) kB", memory, re.MULTILINE)
             result = {"acceleration": "KVM" if kvm else "TCG", "guest_ram_mib": 1024,
-                      "inference_backend": variant,
+                      "inference_backend": variant, "prompt_microbatch": microbatch.group(1),
                       "host_cpu": cpu_match.group(1) if cpu_match else "unknown",
                       "host_mem_total_kib": int(memory_match.group(1)) if memory_match else None,
                       "logical_cpus_pinned": cpus, "threads": 2, "context_configured": 8192,

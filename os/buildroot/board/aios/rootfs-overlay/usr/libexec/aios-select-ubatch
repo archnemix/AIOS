@@ -1,0 +1,9 @@
+#!/bin/sh
+# Conservative ISO default based on measurements of the embedded model using
+# two AVX2 threads. Other configurations retain llama.cpp's own default.
+[ "$#" -eq 3 ] || exit 2
+if [ "$1" = embedded ] && [ "$2" = avx2 ] && [ "$3" = 2 ]; then
+    echo 128
+else
+    echo auto
+fi
